@@ -14,3 +14,17 @@ mtime_ms = 1792575709736
 storage_uri = "gcs://replit-rams-assets-worf/rams/assets/repl:605a65d4-a6a3-4450-8b85-30ff3d5e84ef/91a4b292-fdac-4c0b-b364-464d27fc0d46/532508a2-1e5a-4291-90f5-4b42b07a6803"
 storage_version_token = "1792575740226057"
 content_type = "text/markdown"
+
+[[outputs]]
+id = "MFZrqsY5k8UDwf8n6R9_c"
+uri = "file://docs/superpowers/plans/2026-10-21-btravel-implementation-plan.md"
+type = "text"
+title = "Plan de développement B-TRAVEL"
+description = "Plan en onze tâches couvrant le site public, les quinze fonctions d’administration, la migration et les contrôles de lancement."
+logical_id = "6bca3202-81b1-496c-a399-566e91493aea"
+content_hash = "sha256:c7c8d70b8f83d544cf0c7153883c5b6f6b830624bbf6990e6437a9daaf7896bb"
+size = 35703
+mtime_ms = 1792576270835
+storage_uri = "gcs://replit-rams-assets-worf/rams/assets/repl:605a65d4-a6a3-4450-8b85-30ff3d5e84ef/6bca3202-81b1-496c-a399-566e91493aea/15298895-e9f2-472e-9c24-fc2eef0b0b21"
+storage_version_token = "1792576282956061"
+content_type = "text/markdown"
