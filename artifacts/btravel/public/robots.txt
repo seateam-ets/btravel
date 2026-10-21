@@ -1,2 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /sign-in
+Disallow: /sign-up

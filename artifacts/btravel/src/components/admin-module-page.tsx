@@ -120,7 +120,8 @@ const formatDate = (value: unknown): string => {
   if (Number.isNaN(parsed.getTime())) return "—";
   return new Intl.DateTimeFormat("fr-BE", {
     timeZone: "Europe/Brussels",
-    day: "2-digit",
+    weekday: "short",
+    day: "numeric",
     month: "short",
     year: "numeric",
   }).format(parsed);
@@ -132,11 +133,12 @@ const formatDateTime = (value: unknown): string => {
   if (Number.isNaN(parsed.getTime())) return "—";
   return new Intl.DateTimeFormat("fr-BE", {
     timeZone: "Europe/Brussels",
-    day: "2-digit",
+    weekday: "short",
+    day: "numeric",
     month: "short",
     hour: "2-digit",
     minute: "2-digit",
-  }).format(parsed);
+  }).format(parsed).replace(" à ", " · ");
 };
 
 const formatMoney = (cents: unknown): string => {
@@ -203,16 +205,23 @@ function escapeHtml(value: unknown): string {
   });
 }
 
+const PRINT_STYLE = `
+  body{font:15px/1.55 Inter,Arial,sans-serif;color:#151515;margin:32px auto;max-width:780px;padding:0 24px}
+  .print-head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:18px;margin-bottom:22px;border-bottom:2px solid #151515}
+  .print-head img{height:34px}.print-head address{font-style:normal;font-size:12px;color:#616161;text-align:right;line-height:1.5}
+  h1{font-size:28px;font-weight:600;letter-spacing:-.02em;margin:0 0 8px}h2{font-size:18px;margin:26px 0 8px}
+  .brand{font-size:12px;font-weight:600;color:#616161;text-transform:uppercase;letter-spacing:.08em;margin:0 0 4px}
+  .muted{color:#616161}.row,.row-grid{display:flex;justify-content:space-between;gap:24px;border-bottom:1px solid #e5e7eb;padding:10px 0}
+  .label{color:#616161}.total{font-weight:700;font-size:20px;margin-top:18px}
+  .print-foot{margin-top:40px;padding-top:12px;border-top:1px solid #e5e7eb;font-size:11px;color:#616161}
+  @media print{body{margin:10mm auto}}`;
+const PRINT_HEAD = () => `<div class="print-head"><img src="${window.location.origin}/btravel-logo.png" alt="B-TRAVEL"><address>B-TRAVEL · Avenue des Moissons 18, 1360 Perwez<br>Tél. +32 10 65 02 01 · info@b-travel.be<br>TVA BE1027 217 429</address></div>`;
+const PRINT_FOOT = () => `<div class="print-foot">Document imprimé le ${new Intl.DateTimeFormat("fr-BE", { dateStyle: "long" }).format(new Date())} · B-TRAVEL, transport de personnes en autocar depuis plus de 40 ans.</div>`;
+
 function printPage(title: string, body: string): void {
   const target = window.open("", "_blank");
   if (!target) return;
-  target.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>
-    body{font:15px Arial,sans-serif;color:#18344d;margin:36px auto;max-width:780px;line-height:1.55}
-    h1{font-size:28px;margin:0 0 8px}h2{font-size:18px;margin:26px 0 8px}
-    .muted{color:#5b6d7c}.row{display:flex;justify-content:space-between;gap:24px;border-bottom:1px solid #ddd;padding:10px 0}
-    .total{font-weight:700;font-size:20px;margin-top:18px}.brand{font-size:13px;letter-spacing:.15em;color:#365899}
-    @media print{body{margin:12mm auto}}
-  </style></head><body>${body}<script>window.addEventListener('load',()=>window.print())</script></body></html>`);
+  target.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>${PRINT_STYLE}</style></head><body>${PRINT_HEAD()}${body}${PRINT_FOOT()}<script>window.addEventListener('load',()=>window.print())</script></body></html>`);
   target.document.close();
 }
 
@@ -402,7 +411,7 @@ function TransportMissionButton({ id }: { id: string }) {
         ["Chauffeur", sheet.driverName || "À affecter"],
         ["Notes", sheet.notes || "—"],
       ];
-      target.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Fiche ${escapeHtml(sheet.reference)}</title><style>body{font:15px Arial;color:#18344d;max-width:780px;margin:35px auto}h1{font-size:28px}.row{padding:12px 0;border-bottom:1px solid #ddd;display:grid;grid-template-columns:180px 1fr}.label{color:#607080}</style></head><body><p>B-TRAVEL · FICHE DE MISSION</p><h1>${escapeHtml(sheet.reference)}</h1>${fields.map(([label, value]) => `<div class="row"><span class="label">${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join("")}<script>window.addEventListener('load',()=>window.print())</script></body></html>`);
+      target.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Fiche ${escapeHtml(sheet.reference)}</title><style>${PRINT_STYLE}.row{display:grid;grid-template-columns:180px 1fr}</style></head><body>${PRINT_HEAD()}<p class="brand">Fiche de mission</p><h1>${escapeHtml(sheet.reference)}</h1>${fields.map(([label, value]) => `<div class="row"><span class="label">${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join("")}${PRINT_FOOT()}<script>window.addEventListener('load',()=>window.print())</script></body></html>`);
       target.document.close();
     } catch {
       target.close();
@@ -496,10 +505,27 @@ const FWB_SCHOOL_HOLIDAYS = [
   { startDate: "2028-07-08", endDate: "2028-08-27" },
 ];
 
+const SECTIONS: Record<string, string> = {
+  "/admin/taches": "Accueil",
+  "/admin/demandes": "Demandes et devis", "/admin/devis": "Demandes et devis",
+  "/admin/transports": "Planning des trajets", "/admin/trajets-recurrents": "Planning des trajets",
+  "/admin/clients": "Clients", "/admin/documents": "Clients",
+  "/admin/factures": "Facturation",
+  "/admin/voyages": "Voyages organisés", "/admin/inscriptions": "Voyages organisés",
+  "/admin/vehicules": "Paramètres", "/admin/chauffeurs": "Paramètres",
+};
+const NEW_LABELS: Record<string, string> = {
+  "/admin/demandes": "Nouvelle demande", "/admin/devis": "Nouveau devis", "/admin/clients": "Nouveau client",
+  "/admin/transports": "Nouveau transport", "/admin/trajets-recurrents": "Nouveau trajet régulier",
+  "/admin/vehicules": "Nouvel autocar", "/admin/chauffeurs": "Nouveau chauffeur", "/admin/voyages": "Nouveau voyage",
+  "/admin/factures": "Nouvelle facture", "/admin/taches": "Nouveau rappel", "/admin/inscriptions": "Nouvelle inscription",
+};
+const urlParam = (name: string) => new URLSearchParams(window.location.search).get(name) ?? "";
+
 function AdminModulePage({ path, title, subtitle, columns, Shell }: ModuleProps) {
   const qc = useQueryClient();
-  const [search, setSearch] = useState("");
-  const [showForm, setShowForm] = useState(false);
+  const [search, setSearch] = useState(() => urlParam("q"));
+  const [showForm, setShowForm] = useState(() => urlParam("nouveau") === "1");
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [selectedClient, setSelectedClient] = useState("");
@@ -824,6 +850,7 @@ function AdminModulePage({ path, title, subtitle, columns, Shell }: ModuleProps)
   };
 
   const updateRequest = async (id: string, status: string) => {
+    if (!window.confirm(`Changer le statut de cette demande en « ${statusLabel(status)} » ?`)) { invalidate(getListQuoteRequestsQueryKey()); return; }
     try {
       await updateRequestStatus.mutateAsync({ id, data: { status: status as "new" | "processing" | "quoted" | "closed" } });
       invalidate(getListQuoteRequestsQueryKey());
@@ -888,7 +915,7 @@ function AdminModulePage({ path, title, subtitle, columns, Shell }: ModuleProps)
     }
     if (path === "/admin/voyages") {
       const trip = row as unknown as AdminTrip;
-      return <div className="row-actions"><select aria-label="Visibilité du voyage" value={String(row.visibility)} onChange={async (event) => { try { await updateTrip.mutateAsync({ id, data: { visibility: event.target.value as "draft" | "published" | "archived" } }); invalidate(getListAdminTripsQueryKey()); setNotice("Visibilité mise à jour."); } catch { onFailure(); } }}><option value="draft">Brouillon</option><option value="published">Publié</option><option value="archived">Archivé</option></select><TripEdit trip={trip} onSave={async (data) => { try { await updateTrip.mutateAsync({ id, data }); invalidate(getListAdminTripsQueryKey()); setNotice("Voyage modifié."); } catch { throw new Error("Vérifiez que la capacité reste suffisante pour les inscriptions confirmées."); } }}/><button className="text-link" onClick={() => printPage(`Voyage ${getText(row, "title")}`, `<p class="brand">B-TRAVEL · VOYAGE</p><h1>${escapeHtml(row.title)}</h1><div class="row"><span>Destination</span><strong>${escapeHtml(row.destination)}</strong></div><div class="row"><span>Dates</span><strong>${escapeHtml(formatDate(row.startDate))} au ${escapeHtml(formatDate(row.endDate))}</strong></div><div class="row"><span>Tarif</span><strong>${escapeHtml(formatMoney(row.priceCents))}</strong></div><p>${escapeHtml(row.description)}</p>`)}><Printer size={15}/>Imprimer</button></div>;
+      return <div className="row-actions"><select aria-label="Visibilité du voyage" value={String(row.visibility)} onChange={async (event) => { if (!window.confirm(`Changer la visibilité de ce voyage en « ${statusLabel(event.target.value)} » ? Un voyage publié apparaît sur le site.`)) return; try { await updateTrip.mutateAsync({ id, data: { visibility: event.target.value as "draft" | "published" | "archived" } }); invalidate(getListAdminTripsQueryKey()); setNotice("Visibilité mise à jour."); } catch { onFailure(); } }}><option value="draft">Brouillon</option><option value="published">Publié</option><option value="archived">Archivé</option></select><TripEdit trip={trip} onSave={async (data) => { try { await updateTrip.mutateAsync({ id, data }); invalidate(getListAdminTripsQueryKey()); setNotice("Voyage modifié."); } catch { throw new Error("Vérifiez que la capacité reste suffisante pour les inscriptions confirmées."); } }}/><button className="text-link" onClick={() => printPage(`Voyage ${getText(row, "title")}`, `<p class="brand">B-TRAVEL · VOYAGE</p><h1>${escapeHtml(row.title)}</h1><div class="row"><span>Destination</span><strong>${escapeHtml(row.destination)}</strong></div><div class="row"><span>Dates</span><strong>${escapeHtml(formatDate(row.startDate))} au ${escapeHtml(formatDate(row.endDate))}</strong></div><div class="row"><span>Tarif</span><strong>${escapeHtml(formatMoney(row.priceCents))}</strong></div><p>${escapeHtml(row.description)}</p>`)}><Printer size={15}/>Imprimer</button></div>;
     }
     if (path === "/admin/inscriptions") {
       const booking = row as unknown as TripRequest;
@@ -928,19 +955,19 @@ function AdminModulePage({ path, title, subtitle, columns, Shell }: ModuleProps)
     if (path === "/admin/transports") {
       const events = (occurrences.data ?? []) as unknown as Row[];
       return events.filter((event) => JSON.stringify(event).toLowerCase().includes(search.toLowerCase().trim())).map((event) => (
-        <tr key={String(event.id)}><td className="strong-cell">{getText(event, "title")}{event.kind === "recurring" && <small className="table-subline">Récurrent</small>}</td><td>{getText(event, "pickupAddress")} → {getText(event, "destination")}</td><td>{formatDateTime(event.startAt)}</td><td>{formatDateTime(event.endAt)}</td><td>{getText(event, "passengerCount")}</td><td>{event.kind === "recurring" ? "Récurrent" : statusLabel(event.status)}</td><td>{event.kind === "transport" ? rowActions(event) : "—"}</td></tr>
+        <tr key={String(event.id)}><td data-label="Trajet" className="strong-cell">{getText(event, "title")}{event.kind === "recurring" && <small className="table-subline">Trajet régulier</small>}</td><td data-label="Itinéraire">{getText(event, "pickupAddress")} → {getText(event, "destination")}</td><td data-label="Départ">{formatDateTime(event.startAt)}</td><td data-label="Fin">{formatDateTime(event.endAt)}</td><td data-label="Passagers">{getText(event, "passengerCount")}</td><td data-label="Type">{event.kind === "recurring" ? "Régulier" : statusLabel(event.status)}</td><td data-label="Fiche" className="actions-cell">{event.kind === "transport" ? rowActions(event) : "—"}</td></tr>
       ));
     }
     return filtered.map((row) => (
       <tr key={String(row.id)}>
         {columns.map((column, index) => (
-          <td key={column} className={index === 0 ? "strong-cell" : ""}>
+          <td key={column} data-label={column} className={index === 0 ? "strong-cell" : ""}>
             {["Statut", "État", "Paiement", "Visibilité"].includes(column)
               ? <span className={`status-tag status-${statusLabel(cellValue(row, path, column)).toLowerCase().replaceAll(" ", "-")}`}>{statusLabel(cellValue(row, path, column))}</span>
               : renderCell(row, path, column)}
           </td>
         ))}
-        <td>{rowActions(row)}</td>
+        <td data-label="Actions" className="actions-cell">{rowActions(row)}</td>
       </tr>
     ));
   };
@@ -949,8 +976,8 @@ function AdminModulePage({ path, title, subtitle, columns, Shell }: ModuleProps)
     <Shell title={title}>
       <main className="admin-content module-content">
         <div className="module-title-row">
-          <div><div className="eyebrow">ESPACE DE GESTION</div><h1>{title}</h1><p>{subtitle}</p></div>
-          {path !== "/admin/documents" && <button className="button button-orange" onClick={() => { setShowForm((value) => !value); setError(""); setNotice(""); }}><Plus size={16}/>{showForm ? "Fermer" : path === "/admin/factures" ? "Nouvelle facture" : "Ajouter"}</button>}
+          <div><div className="eyebrow">{SECTIONS[path] ?? "Administration"}</div><h1>{title}</h1><p>{subtitle}</p></div>
+          {path !== "/admin/documents" && <button className="button button-orange" onClick={() => { setShowForm((value) => !value); setError(""); setNotice(""); }}><Plus size={16}/>{showForm ? "Fermer le formulaire" : NEW_LABELS[path] ?? "Ajouter"}</button>}
           {path === "/admin/documents" && <button className="button button-orange" onClick={() => { setShowForm((value) => !value); setError(""); setNotice(""); }}><Upload size={16}/>{showForm ? "Fermer" : "Ajouter un document"}</button>}
         </div>
 
@@ -1042,7 +1069,7 @@ function AdminModulePage({ path, title, subtitle, columns, Shell }: ModuleProps)
         {queryLoading ? <div className="table-skeleton">{[1, 2, 3, 4].map((item) => <div key={item}/>)}</div>
           : queryError ? <div className="error-panel"><CircleAlert/><div><b>Impossible de charger ces données.</b><p>Vérifiez votre accès puis réessayez.</p><button className="button button-orange" onClick={() => invalidate(refreshKey())}>Réessayer</button></div></div>
           : (path === "/admin/transports" ? occurrences.data?.length === 0 : filtered.length === 0)
-            ? <div className="empty-table"><div className="empty-icon"><FileText/></div><strong>{search ? "Aucun résultat pour cette recherche." : "Aucune donnée pour le moment."}</strong><span>{search ? "Essayez un autre terme." : "Les enregistrements apparaîtront ici une fois créés."}</span>{path !== "/admin/documents" && !search && <button className="text-link" onClick={() => setShowForm(true)}>Ajouter un élément <ArrowRight size={14}/></button>}</div>
+            ? <div className="empty-table"><div className="empty-icon"><FileText/></div><strong>{search ? "Aucun résultat pour cette recherche." : "Aucune donnée pour le moment."}</strong><span>{search ? "Essayez un autre terme." : "Les enregistrements apparaîtront ici une fois créés."}</span>{path !== "/admin/documents" && !search && <button className="button button-outline" onClick={() => setShowForm(true)}>{NEW_LABELS[path] ?? "Ajouter"} <ArrowRight size={14}/></button>}</div>
             : <div className="table-wrap"><table><thead><tr>{(path === "/admin/transports" ? ["Trajet", "Itinéraire", "Départ", "Fin", "Passagers", "Type", "Fiche"] : [...columns, "Actions"]).map((column) => <th key={column}>{column}</th>)}</tr></thead><tbody>{renderTableRows()}</tbody></table></div>}
       </main>
     </Shell>
@@ -1050,7 +1077,7 @@ function AdminModulePage({ path, title, subtitle, columns, Shell }: ModuleProps)
 }
 
 function CreateForm({ children, onSubmit, pending }: { children: ReactNode; onSubmit: (event: FormEvent<HTMLFormElement>) => void; pending: boolean }) {
-  return <form className="inline-create admin-create-form" onSubmit={onSubmit}><div className="form-section-title"><span>Nouvel élément</span></div>{children}<div className="form-footer"><button className="button button-orange" disabled={pending}>{pending ? "Enregistrement…" : "Enregistrer"}</button></div></form>;
+  return <form className="inline-create admin-create-form" onSubmit={onSubmit}><div className="form-section-title"><span>Remplissez les informations puis cliquez sur « Enregistrer »</span></div>{children}<div className="form-footer"><button className="button button-orange" disabled={pending}>{pending ? "Enregistrement…" : "Enregistrer"}</button></div></form>;
 }
 
 function AvailabilityEditor({ label, intervals, onSave }: { label: string; intervals: DateTimeRange[]; onSave: (value: DateTimeRange[]) => Promise<void> }) {
