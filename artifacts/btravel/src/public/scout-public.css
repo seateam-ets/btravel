@@ -762,3 +762,36 @@
   .sc-nav2-phone { width:46px; height:46px; padding:0; justify-content:center; border-radius:9999px; background:rgba(255,255,255,.16); }
   .sc-nav2.is-solid .sc-nav2-phone { background:#f2f2f2; }
 }
+
+/* ===== Qui sommes-nous ===== */
+.sc-who { padding:clamp(64px,8vw,112px) max(20px,calc((100% - 1440px)/2 + 32px)); display:grid; grid-template-columns:1fr 1fr; gap:clamp(32px,6vw,96px); align-items:center; background:#fff; }
+.sc-who-media { position:relative; min-height:520px; }
+.sc-who-media img { position:absolute; object-fit:cover; border-radius:20px; }
+.sc-who-media img:first-child { inset:0 18% 18% 0; width:82%; height:82%; }
+.sc-who-media img:last-child { right:0; bottom:0; width:48%; height:44%; border:6px solid #fff; }
+.sc-who-copy { display:grid; gap:18px; justify-items:start; }
+.sc-who-copy h2 { font-size:clamp(32px,3.8vw,52px); font-weight:500; letter-spacing:-.034em; line-height:1.08; }
+.sc-who-copy p { font-size:17px; line-height:1.65; color:#4a4a4a; }
+.sc-who-facts { list-style:none; margin:8px 0; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:0; width:100%; border-top:1px solid #e5e7eb; }
+.sc-who-facts li { display:grid; gap:2px; padding:14px 12px 14px 0; border-bottom:1px solid #e5e7eb; }
+.sc-who-facts b { font-size:18px; font-weight:600; }
+.sc-who-facts span { font-size:14px; color:#616161; line-height:1.4; }
+
+/* ===== Page contact ===== */
+.sc-contactzone { background:#fff; }
+.sc-contact-list { display:grid; border-top:1px solid #e5e7eb; }
+.sc-contact-list>* { display:grid; gap:2px; padding:14px 0; border-bottom:1px solid #e5e7eb; }
+.sc-contact-list span { font-size:14px; color:#616161; }
+.sc-contact-list strong { font-size:18px; font-weight:500; }
+.sc-contact-list a:hover strong { text-decoration:underline; }
+.sc-contact-devis { display:grid; gap:10px; justify-items:start; padding:20px; background:#f2f2f2; border-radius:20px; }
+.sc-contact-devis p { font-size:16px; color:#151515; }
+
+@media (max-width: 960px) {
+  .sc-who { grid-template-columns:1fr; }
+  .sc-who-media { min-height:340px; }
+}
+@media (max-width: 640px) {
+  .sc-who-facts { grid-template-columns:1fr; }
+  .sc-who-media { min-height:260px; }
+}

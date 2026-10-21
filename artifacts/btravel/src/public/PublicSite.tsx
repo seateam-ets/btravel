@@ -6,6 +6,7 @@ import { useListPublicTrips, useGetPublicTrip, createTripRequest } from '@worksp
 import type { PublicTrip, TripRequestInput } from '@workspace/api-client-react';
 import { categoryForPassengers, fleetCategories, transportTypes } from './fleet';
 import { QuoteForm } from './QuoteForm';
+import { ContactForm } from './ContactForm';
 import content from '@/content/site-content.json';
 import './scout-public.css';
 
@@ -319,8 +320,28 @@ export function Home() {
       <FleetChooser />
     </section>
 
+    <section className="sc-who" id="qui-sommes-nous">
+      <div className="sc-who-media rv">
+        <img src={content.historyImages[0]} alt="Autocar B-TRAVEL dans les années 1980" loading="lazy" />
+        <img src={content.historyImages[5]} alt="Minibus aux couleurs de B-TRAVEL" loading="lazy" />
+      </div>
+      <div className="sc-who-copy">
+        <Kicker n="03">Qui sommes-nous ?</Kicker>
+        <h2 className="rv">Une entreprise familiale, sur la route depuis plus de 40 ans.</h2>
+        <p className="rv">Active depuis plus de 40 ans, <b>B-TRAVEL</b> est une société familiale spécialisée dans le transport de personnes en autocars. Le parc des véhicules se situe à Perwez, dans la province du Brabant wallon.</p>
+        <p className="rv">Écoles, entreprises, associations et groupes : nous accompagnons tous vos déplacements en Belgique et à l’étranger. Peu importe votre destination, nous nous engageons à ce que votre expérience soit à l’image de vos espérances, avec deux priorités : <b>votre sécurité et votre confort</b>.</p>
+        <ul className="sc-who-facts rv">
+          <li><b>Depuis plus de 40 ans</b><span>Entreprise familiale</span></li>
+          <li><b>Perwez</b><span>Dépôt dans le Brabant wallon</span></li>
+          <li><b>Partenaire</b><span>de la Province du Brabant wallon</span></li>
+          <li><b>Membre</b><span>de la Fédération belge des entrepreneurs de transport par autobus et autocars</span></li>
+        </ul>
+        <Link href="/a-propos" className="sc-btn sc-btn-dark">En savoir plus sur B-TRAVEL <ArrowRight size={16} /></Link>
+      </div>
+    </section>
+
     <section className="sc-section" id="services">
-      <div className="sc-head"><div><Kicker n="03">Nos services</Kicker><h2 className="rv">Un autocar pour chaque projet.</h2></div><p className="sc-note">Vous êtes enseignant, responsable d’association ou organisateur d’événement ? Quel que soit le motif de vos déplacements, nous sommes à votre service.</p></div>
+      <div className="sc-head"><div><Kicker n="04">Nos services</Kicker><h2 className="rv">Un autocar pour chaque projet.</h2></div><p className="sc-note">Vous êtes enseignant, responsable d’association ou organisateur d’événement ? Quel que soit le motif de vos déplacements, nous sommes à votre service.</p></div>
       <div className="sc-services">{services.map((sv, i) => {
         const Icon = sv.icon;
         return <Link key={sv.title} href={sv.href ?? `/demande-de-transport?type=${encodeURIComponent(sv.type ?? '')}`} className="sc-service rv" style={{ transitionDelay: `${(i % 3) * 70}ms` }}>
@@ -331,25 +352,25 @@ export function Home() {
     </section>
 
     <section className="sc-heritage">
-      <div className="sc-head"><div><Kicker n="04">Notre histoire</Kicker><h2 className="rv">Plus de 40 ans sur la route.</h2></div><p className="sc-note">Des premiers autocars aux couleurs B-TRAVEL jusqu’aux traversées vers l’étranger : une histoire de famille, de confiance et de kilomètres partagés.</p></div>
+      <div className="sc-head"><div><Kicker n="05">Notre histoire</Kicker><h2 className="rv">Plus de 40 ans sur la route.</h2></div><p className="sc-note">Des premiers autocars aux couleurs B-TRAVEL jusqu’aux traversées vers l’étranger : une histoire de famille, de confiance et de kilomètres partagés.</p></div>
       <div className="sc-heritage-track" tabIndex={0} role="region" aria-label="Photos d’archives, faire défiler horizontalement">{content.historyImages.map((src, i) => <figure key={src} className="rv" style={{ transitionDelay: `${(i % 3) * 70}ms` }}><img src={src} alt={`Archives B-TRAVEL, photographie ${i + 1}`} loading="lazy" /><figcaption>Archives B-TRAVEL · {String(i + 1).padStart(2, '0')}</figcaption></figure>)}</div>
       <Link href="/a-propos" className="sc-textlink">Découvrir notre histoire <ArrowRight size={15} /></Link>
     </section>
 
     <section className="sc-section sc-section-tint">
-      <div className="sc-head"><div><Kicker n="05">Prochains départs</Kicker><h2 className="rv">Voyages organisés au départ de Perwez, Wavre et Bruxelles.</h2></div><Link href="/voyages" className="sc-textlink">Tous nos voyages <ArrowRight size={15} /></Link></div>
+      <div className="sc-head"><div><Kicker n="06">Prochains départs</Kicker><h2 className="rv">Voyages organisés au départ de Perwez, Wavre et Bruxelles.</h2></div><Link href="/voyages" className="sc-textlink">Tous nos voyages <ArrowRight size={15} /></Link></div>
       <TripCards trips={list} loading={trips.isLoading} error={trips.isError} retry={() => trips.refetch()} />
       {!trips.isLoading && !hasApiCologne && <AnnouncementCard />}
     </section>
 
     <section className="sc-section sc-reviews">
-      <div className="sc-head"><div><Kicker n="06">Ce qu’ils disent de nous</Kicker><h2 className="rv">« Excellent », sur la base de 16 avis Google.</h2></div></div>
+      <div className="sc-head"><div><Kicker n="07">Ce qu’ils disent de nous</Kicker><h2 className="rv">« Excellent », sur la base de 16 avis Google.</h2></div></div>
       <div className="sc-review-row" tabIndex={0} role="region" aria-label="Avis clients">{reviews.filter(r => !r.text.startsWith('Avis sans')).map((r, i) => <figure key={r.name} className="sc-review rv" style={{ transitionDelay: `${i * 80}ms` }}><div className="sc-stars" role="img" aria-label="Note : 5 étoiles sur 5">{[1, 2, 3, 4, 5].map(n => <Star key={n} size={14} fill="currentColor" />)}</div><blockquote>« {r.text} »</blockquote><figcaption><span className="sc-avatar">{r.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</span><span>{r.name}<small className="sc-mono">{r.date} · Google</small></span></figcaption></figure>)}</div>
     </section>
 
     <section className="sc-quotezone" id="devis">
       <div className="sc-quotezone-intro">
-        <Kicker n="07">Demande de devis</Kicker>
+        <Kicker n="08">Demande de devis</Kicker>
         <h2 className="rv">Parlez-nous de votre trajet.</h2>
         <p>Trois étapes, environ deux minutes. Nous vous répondons avec un devis personnalisé, gratuit et sans engagement.</p>
         <ul className="sc-quotezone-list"><li><Check size={16} />Réponse par notre équipe, pas par un robot</li><li><Check size={16} />Prix validé au cas par cas</li><li><Check size={16} />Aucun paiement en ligne</li></ul>
@@ -359,7 +380,7 @@ export function Home() {
     </section>
 
     <section className="sc-section sc-partners">
-      <Kicker n="08">Partenaires et réseaux</Kicker>
+      <Kicker n="09">Partenaires et réseaux</Kicker>
       <div className="sc-partner-row">{content.partners.map(p => <div className="sc-partner rv" key={p.name}><img src={p.image} alt={p.name} loading="lazy" /><p>{p.description}</p></div>)}
         <a className="sc-partner sc-fb rv" href={content.facebook} target="_blank" rel="noreferrer"><span className="sc-mono">Suivez-nous sur les réseaux</span><strong>Facebook · Autocars B-TRAVEL</strong><ArrowUpRight /></a></div>
     </section>
@@ -472,22 +493,22 @@ export function VehiclesPage() {
 
 /* ---------- Contact ---------- */
 export function Contact() {
-  return <PublicLayout title="Contact" description="Contactez B-TRAVEL à Perwez : +32 10 65 02 01, info@b-travel.be, ou envoyez votre demande de transport en ligne."><main>
-    <PageHero kicker="Contact" title="Un mot suffit pour commencer." meta={['Perwez', 'Nil-Saint-Vincent']} />
-    <section className="sc-section">
-      <div className="sc-contact">
-        <a href={PHONE_HREF} className="rv"><span className="sc-mono">Téléphone</span><strong>{A.phone}</strong></a>
-        <a href={`mailto:${A.email}`} className="rv"><span className="sc-mono">E-mail</span><strong>{A.email}</strong></a>
-        <div className="rv"><span className="sc-mono">Fax</span><strong>{A.fax}</strong></div>
-        <div className="rv"><span className="sc-mono">Siège d’exploitation</span><strong>{A.operating}</strong></div>
-        <div className="rv"><span className="sc-mono">Siège social</span><strong>{A.registered}</strong></div>
-        <div className="rv"><span className="sc-mono">TVA</span><strong>{A.vat}</strong></div>
-        <a href={content.facebook} target="_blank" rel="noreferrer" className="rv"><span className="sc-mono">Facebook</span><strong>Autocars B-TRAVEL</strong></a>
+  return <PublicLayout title="Contact" description="Contactez B-TRAVEL à Perwez : +32 10 65 02 01, info@b-travel.be, ou écrivez-nous via le formulaire de contact."><main>
+    <PageHero kicker="Contact" title="Un mot suffit pour commencer." meta={['Réponse rapide', 'Perwez, Brabant wallon']}><p>Une question, une demande d’information ou un projet de voyage ? Écrivez-nous ou appelez-nous.</p></PageHero>
+    <section className="sc-quotezone sc-contactzone">
+      <div className="sc-quotezone-intro">
+        <h2>Nous contacter</h2>
+        <div className="sc-contact-list">
+          <a href={PHONE_HREF}><span>Téléphone</span><strong>{A.phone}</strong></a>
+          <a href={`mailto:${A.email}`}><span>E-mail</span><strong>{A.email}</strong></a>
+          <div><span>Siège d’exploitation</span><strong>{A.operating}</strong></div>
+          <div><span>Siège social</span><strong>{A.registered}</strong></div>
+          <div><span>Fax · TVA</span><strong>{A.fax} · {A.vat}</strong></div>
+          <a href={content.facebook} target="_blank" rel="noreferrer"><span>Facebook</span><strong>Autocars B-TRAVEL</strong></a>
+        </div>
+        <div className="sc-contact-devis"><p>Vous avez un trajet précis à organiser ?</p><Link href="/demande-de-transport" className="sc-btn sc-btn-outline">Demander un devis <ArrowRight size={16} /></Link></div>
       </div>
-    </section>
-    <section className="sc-quotezone">
-      <div className="sc-quotezone-intro"><Kicker n="02">Écrivez-nous</Kicker><h2>Une demande de transport ?</h2><p>Remplissez le formulaire : votre demande arrive directement chez notre équipe, qui vous recontacte rapidement.</p></div>
-      <QuoteForm phone={A.phone} phoneHref={PHONE_HREF} />
+      <ContactForm phone={A.phone} phoneHref={PHONE_HREF} />
     </section>
   </main></PublicLayout>;
 }

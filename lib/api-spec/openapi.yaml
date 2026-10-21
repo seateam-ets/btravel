@@ -96,6 +96,53 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/SubmissionReceipt" }
         "400": { $ref: "#/components/responses/BadRequest" }
+  /contact-messages:
+    post:
+      operationId: createContactMessage
+      tags: [public]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ContactMessageInput" }
+      responses:
+        "201":
+          description: Message enregistré
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SubmissionReceipt" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+  /admin/contact-messages:
+    get:
+      operationId: listContactMessages
+      tags: [admin]
+      responses:
+        "200":
+          description: Demandes de contact
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ContactMessage" }
+  /admin/contact-messages/{id}/status:
+    patch:
+      operationId: updateContactMessageStatus
+      tags: [admin]
+      parameters:
+        - { $ref: "#/components/parameters/Id" }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ContactMessageStatusInput" }
+      responses:
+        "200":
+          description: Statut modifié
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ContactMessage" }
+        "404": { $ref: "#/components/responses/NotFound" }
   /admin/dashboard:
     get:
       operationId: getDashboard
@@ -1302,6 +1349,30 @@ components:
         priceCents: { type: integer, minimum: 0 }
         capacity: { type: integer, minimum: 1 }
         visibility: { type: string, enum: [draft, published, archived] }
+    ContactMessageInput:
+      type: object
+      required: [name, email, message]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 120 }
+        email: { type: string, format: email }
+        phone: { type: string, maxLength: 40 }
+        subject: { type: string, maxLength: 160 }
+        message: { type: string, minLength: 5, maxLength: 4000 }
+    ContactMessage:
+      allOf:
+        - { $ref: "#/components/schemas/ContactMessageInput" }
+        - type: object
+          required: [id, reference, status, createdAt]
+          properties:
+            id: { type: string, format: uuid }
+            reference: { type: string }
+            status: { type: string, enum: [new, processing, closed] }
+            createdAt: { type: string, format: date-time }
+    ContactMessageStatusInput:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [new, processing, closed] }
     TripRequestInput:
       type: object
       required: [tripId, contactName, email, phone, seatCount]
@@ -1458,9 +1529,10 @@ components:
         entityId: { type: string, format: uuid }
     Dashboard:
       type: object
-      required: [newRequests, quotesToFollow, upcomingTransports, pendingTripRequests, unpaidInvoicesCents, tasks, recentActivity]
+      required: [newRequests, newContactMessages, quotesToFollow, upcomingTransports, pendingTripRequests, unpaidInvoicesCents, tasks, recentActivity]
       properties:
         newRequests: { type: integer, minimum: 0 }
+        newContactMessages: { type: integer, minimum: 0 }
         quotesToFollow: { type: integer, minimum: 0 }
         upcomingTransports: { type: integer, minimum: 0 }
         pendingTripRequests: { type: integer, minimum: 0 }

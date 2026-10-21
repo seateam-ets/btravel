@@ -4,6 +4,7 @@ import * as api from "@workspace/api-zod";
 import {
   db,
   activityEvents,
+  contactMessages,
   adminTasks,
   invoices,
   quoteRequests,
@@ -25,6 +26,7 @@ router.get("/dashboard", async (req, res): Promise<void> => {
       [unpaidInvoiceTotal],
       tasks,
       activities,
+      [newContactCount],
     ] = await Promise.all([
       db
         .select({ value: count() })
@@ -64,9 +66,14 @@ router.get("/dashboard", async (req, res): Promise<void> => {
         .from(activityEvents)
         .orderBy(desc(activityEvents.occurredAt))
         .limit(8),
+      db
+        .select({ value: count() })
+        .from(contactMessages)
+        .where(eq(contactMessages.status, "new")),
     ]);
     const result = {
       newRequests: newRequestCount.value,
+      newContactMessages: newContactCount.value,
       quotesToFollow: quotesToFollow.value,
       upcomingTransports: upcomingTransportCount.value,
       pendingTripRequests: pendingTripRequestCount.value,

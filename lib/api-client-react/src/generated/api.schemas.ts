@@ -585,6 +585,53 @@ export interface TripUpdate {
   visibility?: TripUpdateVisibility;
 }
 
+export interface ContactMessageInput {
+  /**
+     * @minLength 2
+     * @maxLength 120
+     */
+  name: string;
+  email: string;
+  /** @maxLength 40 */
+  phone?: string;
+  /** @maxLength 160 */
+  subject?: string;
+  /**
+     * @minLength 5
+     * @maxLength 4000
+     */
+  message: string;
+}
+
+export type ContactMessageStatus = typeof ContactMessageStatus[keyof typeof ContactMessageStatus];
+
+
+export const ContactMessageStatus = {
+  new: 'new',
+  processing: 'processing',
+  closed: 'closed',
+} as const;
+
+export type ContactMessage = ContactMessageInput & {
+  id: string;
+  reference: string;
+  status: ContactMessageStatus;
+  createdAt: string;
+};
+
+export type ContactMessageStatusInputStatus = typeof ContactMessageStatusInputStatus[keyof typeof ContactMessageStatusInputStatus];
+
+
+export const ContactMessageStatusInputStatus = {
+  new: 'new',
+  processing: 'processing',
+  closed: 'closed',
+} as const;
+
+export interface ContactMessageStatusInput {
+  status: ContactMessageStatusInputStatus;
+}
+
 export interface TripRequestInput {
   tripId: string;
   /** @minLength 2 */
@@ -809,6 +856,8 @@ export interface Activity {
 export interface Dashboard {
   /** @minimum 0 */
   newRequests: number;
+  /** @minimum 0 */
+  newContactMessages: number;
   /** @minimum 0 */
   quotesToFollow: number;
   /** @minimum 0 */

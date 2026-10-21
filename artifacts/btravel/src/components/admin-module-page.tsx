@@ -29,6 +29,8 @@ import {
   useListRecurringRoutes,
   useListScheduleOccurrences,
   useListTasks,
+  useListContactMessages,
+  useUpdateContactMessageStatus,
   useListTransports,
   useListTripRequests,
   useListVehicles,
@@ -59,6 +61,7 @@ import {
   getListRecurringRoutesQueryKey,
   getListScheduleOccurrencesQueryKey,
   getListTasksQueryKey,
+  getListContactMessagesQueryKey,
   getListTransportsQueryKey,
   getListTripRequestsQueryKey,
   getListVehiclesQueryKey,
@@ -507,6 +510,7 @@ const FWB_SCHOOL_HOLIDAYS = [
 
 const SECTIONS: Record<string, string> = {
   "/admin/taches": "Accueil",
+  "/admin/contacts": "Demandes et devis",
   "/admin/demandes": "Demandes et devis", "/admin/devis": "Demandes et devis",
   "/admin/transports": "Planning des trajets", "/admin/trajets-recurrents": "Planning des trajets",
   "/admin/clients": "Clients", "/admin/documents": "Clients",
@@ -552,6 +556,8 @@ function AdminModulePage({ path, title, subtitle, columns, Shell }: ModuleProps)
   const invoiceSettings = useGetInvoiceSettings({ query: { enabled: path === "/admin/factures", queryKey: getGetInvoiceSettingsQueryKey() } });
   const documents = useListDocuments({ query: { enabled: path === "/admin/documents", queryKey: getListDocumentsQueryKey() } });
   const tasks = useListTasks({ query: { enabled: path === "/admin/taches", queryKey: getListTasksQueryKey() } });
+  const contacts = useListContactMessages({ query: { enabled: path === "/admin/contacts", queryKey: getListContactMessagesQueryKey() } });
+  const updateContactStatus = useUpdateContactMessageStatus();
   const clientHistory = useGetClientHistory(selectedClient, { query: { enabled: Boolean(selectedClient), queryKey: getGetClientHistoryQueryKey(selectedClient) } });
 
   const createClient = useCreateClient();
@@ -610,7 +616,8 @@ function AdminModulePage({ path, title, subtitle, columns, Shell }: ModuleProps)
     path === "/admin/inscriptions" ? bookings.data :
     path === "/admin/factures" ? invoices.data :
     path === "/admin/documents" ? documents.data :
-    path === "/admin/taches" ? tasks.data : []
+    path === "/admin/taches" ? tasks.data :
+    path === "/admin/contacts" ? contacts.data : []
   ) as unknown as Row[] | undefined ?? [];
 
   const filtered = rawData.filter((row) =>
@@ -629,7 +636,8 @@ function AdminModulePage({ path, title, subtitle, columns, Shell }: ModuleProps)
     path === "/admin/inscriptions" ? bookings.isLoading :
     path === "/admin/factures" ? invoices.isLoading || invoiceSettings.isLoading :
     path === "/admin/documents" ? documents.isLoading :
-    path === "/admin/taches" ? tasks.isLoading : false;
+    path === "/admin/taches" ? tasks.isLoading :
+    path === "/admin/contacts" ? contacts.isLoading : false;
 
   const queryError =
     path === "/admin/demandes" ? requests.isError :
@@ -643,7 +651,8 @@ function AdminModulePage({ path, title, subtitle, columns, Shell }: ModuleProps)
     path === "/admin/inscriptions" ? bookings.isError :
     path === "/admin/factures" ? invoices.isError || invoiceSettings.isError :
     path === "/admin/documents" ? documents.isError :
-    path === "/admin/taches" ? tasks.isError : false;
+    path === "/admin/taches" ? tasks.isError :
+    path === "/admin/contacts" ? contacts.isError : false;
 
   const refreshKey = (): QueryKey => {
     if (path === "/admin/demandes") return getListQuoteRequestsQueryKey();
@@ -657,6 +666,7 @@ function AdminModulePage({ path, title, subtitle, columns, Shell }: ModuleProps)
     if (path === "/admin/inscriptions") return getListTripRequestsQueryKey();
     if (path === "/admin/factures") return getListInvoicesQueryKey();
     if (path === "/admin/documents") return getListDocumentsQueryKey();
+    if (path === "/admin/contacts") return getListContactMessagesQueryKey();
     return getListTasksQueryKey();
   };
 
@@ -925,6 +935,13 @@ function AdminModulePage({ path, title, subtitle, columns, Shell }: ModuleProps)
       const invoice = row as unknown as Invoice;
       return <div className="row-actions"><button className="text-link" onClick={() => printPage(`Facture ${invoice.reference}`, `<p class="brand">B-TRAVEL · FACTURE</p><h1>${escapeHtml(invoice.reference)}</h1><div class="row"><span>Client</span><strong>${escapeHtml(invoice.clientName)}</strong></div><div class="row"><span>Créée le</span><strong>${escapeHtml(formatDate(invoice.createdAt))}</strong></div><div class="row"><span>Échéance</span><strong>${escapeHtml(formatDate(invoice.dueDate))}</strong></div><p class="total">${escapeHtml(formatMoney(invoice.totalCents))}</p><p>${escapeHtml(invoiceSettings.data?.legalText ?? "")}</p>`)}><Printer size={15}/>Imprimer</button>{invoice.status === "draft" && <button className="text-link" disabled={!invoiceSettings.data?.rulesApproved || issueInvoice.isPending} onClick={async () => { try { await issueInvoice.mutateAsync({ id }); invalidate(getListInvoicesQueryKey()); setNotice("Facture émise."); } catch { onFailure("Émission bloquée : vérifiez la validation comptable et les paramètres."); } }}>Émettre</button>}{["issued", "partially_paid"].includes(invoice.status) && <PaymentForm invoice={invoice} onSaved={() => invalidate(getListInvoicesQueryKey())}/>}</div>;
     }
+    if (path === "/admin/contacts") {
+      const updateContact = async (status: string) => {
+        if (!window.confirm(`Changer le statut de ce message en « ${statusLabel(status)} » ?`)) { invalidate(getListContactMessagesQueryKey()); return; }
+        try { await updateContactStatus.mutateAsync({ id, data: { status: status as "new" | "processing" | "closed" } }); invalidate(getListContactMessagesQueryKey()); setNotice("Statut mis à jour."); } catch { onFailure("Le statut n’a pas pu être modifié."); }
+      };
+      return <div className="row-actions"><select aria-label="Statut du message" value={String(row.status)} onChange={(event) => void updateContact(event.target.value)}><option value="new">Nouvelle</option><option value="processing">En cours</option><option value="closed">Traitée</option></select><ContactDetails row={row}/></div>;
+    }
     if (path === "/admin/taches") {
       return <label className="task-complete-control"><input type="checkbox" checked={Boolean(row.completed)} onChange={async (event) => { try { await updateTask.mutateAsync({ id, data: { completed: event.target.checked } }); invalidate(getListTasksQueryKey()); } catch { onFailure(); } }}/><span>{Boolean(row.completed) ? "Terminée" : "Terminer"}</span></label>;
     }
@@ -977,7 +994,7 @@ function AdminModulePage({ path, title, subtitle, columns, Shell }: ModuleProps)
       <main className="admin-content module-content">
         <div className="module-title-row">
           <div><div className="eyebrow">{SECTIONS[path] ?? "Administration"}</div><h1>{title}</h1><p>{subtitle}</p></div>
-          {path !== "/admin/documents" && <button className="button button-orange" onClick={() => { setShowForm((value) => !value); setError(""); setNotice(""); }}><Plus size={16}/>{showForm ? "Fermer le formulaire" : NEW_LABELS[path] ?? "Ajouter"}</button>}
+          {!["/admin/documents", "/admin/contacts"].includes(path) && <button className="button button-orange" onClick={() => { setShowForm((value) => !value); setError(""); setNotice(""); }}><Plus size={16}/>{showForm ? "Fermer le formulaire" : NEW_LABELS[path] ?? "Ajouter"}</button>}
           {path === "/admin/documents" && <button className="button button-orange" onClick={() => { setShowForm((value) => !value); setError(""); setNotice(""); }}><Upload size={16}/>{showForm ? "Fermer" : "Ajouter un document"}</button>}
         </div>
 
@@ -1069,7 +1086,7 @@ function AdminModulePage({ path, title, subtitle, columns, Shell }: ModuleProps)
         {queryLoading ? <div className="table-skeleton">{[1, 2, 3, 4].map((item) => <div key={item}/>)}</div>
           : queryError ? <div className="error-panel"><CircleAlert/><div><b>Impossible de charger ces données.</b><p>Vérifiez votre accès puis réessayez.</p><button className="button button-orange" onClick={() => invalidate(refreshKey())}>Réessayer</button></div></div>
           : (path === "/admin/transports" ? occurrences.data?.length === 0 : filtered.length === 0)
-            ? <div className="empty-table"><div className="empty-icon"><FileText/></div><strong>{search ? "Aucun résultat pour cette recherche." : "Aucune donnée pour le moment."}</strong><span>{search ? "Essayez un autre terme." : "Les enregistrements apparaîtront ici une fois créés."}</span>{path !== "/admin/documents" && !search && <button className="button button-outline" onClick={() => setShowForm(true)}>{NEW_LABELS[path] ?? "Ajouter"} <ArrowRight size={14}/></button>}</div>
+            ? <div className="empty-table"><div className="empty-icon"><FileText/></div><strong>{search ? "Aucun résultat pour cette recherche." : "Aucune donnée pour le moment."}</strong><span>{search ? "Essayez un autre terme." : "Les enregistrements apparaîtront ici une fois créés."}</span>{!["/admin/documents", "/admin/contacts"].includes(path) && !search && <button className="button button-outline" onClick={() => setShowForm(true)}>{NEW_LABELS[path] ?? "Ajouter"} <ArrowRight size={14}/></button>}</div>
             : <div className="table-wrap"><table><thead><tr>{(path === "/admin/transports" ? ["Trajet", "Itinéraire", "Départ", "Fin", "Passagers", "Type", "Fiche"] : [...columns, "Actions"]).map((column) => <th key={column}>{column}</th>)}</tr></thead><tbody>{renderTableRows()}</tbody></table></div>}
       </main>
     </Shell>
@@ -1165,6 +1182,11 @@ function DocumentUpload({ pending, entities, onUpload }: {
 }
 
 function renderCell(row: Row, path: string, column: string): ReactNode {
+  if (path === "/admin/contacts") {
+    if (column === "Contact") return <>{getText(row, "name")}<small className="table-subline">{getText(row, "email")}</small></>;
+    if (column === "Sujet") return <>{row.subject ? String(row.subject) : "Message"}<small className="table-subline">{String(row.message ?? "").slice(0, 90)}{String(row.message ?? "").length > 90 ? "…" : ""}</small></>;
+    if (column === "Reçu le") return formatDateTime(row.createdAt);
+  }
   const dateKeys: Record<string, string> = {
     "Date": "departureAt",
     "Départ": path === "/admin/voyages" ? "startDate" : "startAt",
@@ -1259,5 +1281,22 @@ function RequestDetails({ row }: { row: Row }) {
   return <details className="row-edit"><summary>Voir la demande</summary><div className="row-action-details request-details">
     <dl>{lines.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{label === "Téléphone" && value !== "—" ? <a href={`tel:${value.replace(/\s/g, "")}`}>{value}</a> : label === "E-mail" && value !== "—" ? <a href={`mailto:${value}`}>{value}</a> : value}</dd></div>)}</dl>
     {row.notes ? <p style={{ whiteSpace: "pre-line" }}><strong>Informations complémentaires</strong><br/>{String(row.notes)}</p> : null}
+  </div></details>;
+}
+
+function ContactDetails({ row }: { row: Row }) {
+  const email = String(row.email ?? "");
+  const phone = row.phone ? String(row.phone) : "";
+  const reply = `mailto:${email}?subject=${encodeURIComponent(`Re: ${row.subject ? String(row.subject) : "Votre message à B-TRAVEL"}`)}`;
+  return <details className="row-edit"><summary>Lire le message</summary><div className="row-action-details request-details">
+    <dl>
+      <div><dt>De</dt><dd>{String(row.name ?? "—")}</dd></div>
+      <div><dt>E-mail</dt><dd><a href={`mailto:${email}`}>{email}</a></dd></div>
+      <div><dt>Téléphone</dt><dd>{phone ? <a href={`tel:${phone.replace(/\s/g, "")}`}>{phone}</a> : "—"}</dd></div>
+      <div><dt>Sujet</dt><dd>{row.subject ? String(row.subject) : "—"}</dd></div>
+      <div><dt>Reçu le</dt><dd>{formatDateTime(row.createdAt)}</dd></div>
+    </dl>
+    <p style={{ whiteSpace: "pre-line" }}>{String(row.message ?? "")}</p>
+    <div className="row-actions"><a className="button button-orange" href={reply}>Répondre par e-mail</a>{phone && <a className="button button-outline" href={`tel:${phone.replace(/\s/g, "")}`}>Appeler</a>}</div>
   </div></details>;
 }

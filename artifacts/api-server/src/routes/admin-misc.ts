@@ -2,11 +2,54 @@ import { and, desc, eq, gte } from "drizzle-orm";
 import { Router, type IRouter } from "express";
 import * as api from "@workspace/api-zod";
 import { getAuth } from "@clerk/express";
-import { db, adminTasks, documents, invoices, trips, transports, quoteRequests, tripRequests } from "@workspace/db";
+import { db, adminTasks, contactMessages, documents, invoices, trips, transports, quoteRequests, tripRequests } from "@workspace/db";
 import { ObjectStorageService } from "../lib/objectStorage";
 import { setObjectAclPolicy, ObjectPermission } from "../lib/objectAcl";
 
 const router: IRouter = Router();
+
+function contactResponse(row: typeof contactMessages.$inferSelect) {
+  return {
+    ...row,
+    phone: row.phone ?? undefined,
+    subject: row.subject ?? undefined,
+    createdAt: new Date(row.createdAt).toISOString(),
+  };
+}
+
+router.get("/contact-messages", async (req, res): Promise<void> => {
+  try {
+    const rows = await db.select().from(contactMessages).orderBy(desc(contactMessages.createdAt));
+    res.json(api.ListContactMessagesResponse.parse(rows.map(contactResponse)));
+  } catch (error) {
+    req.log.error({ err: error }, "Contact messages could not be loaded");
+    res.status(500).json({ error: "Les demandes de contact sont indisponibles." });
+  }
+});
+
+router.patch("/contact-messages/:id/status", async (req, res): Promise<void> => {
+  const params = api.UpdateContactMessageStatusParams.safeParse(req.params);
+  const body = api.UpdateContactMessageStatusBody.safeParse(req.body);
+  if (!params.success || !body.success) {
+    res.status(400).json({ error: "Statut invalide." });
+    return;
+  }
+  try {
+    const [updated] = await db
+      .update(contactMessages)
+      .set({ status: body.data.status })
+      .where(eq(contactMessages.id, params.data.id))
+      .returning();
+    if (!updated) {
+      res.status(404).json({ error: "Demande de contact introuvable." });
+      return;
+    }
+    res.json(api.UpdateContactMessageStatusResponse.parse(contactResponse(updated)));
+  } catch (error) {
+    req.log.error({ err: error }, "Contact message status could not be updated");
+    res.status(500).json({ error: "Le statut n’a pas pu être modifié." });
+  }
+});
 const storage = new ObjectStorageService();
 const acceptedContentTypes = new Set([
   "application/pdf",

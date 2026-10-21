@@ -145,7 +145,97 @@ export const CreateTripRequestResponse = zod.object({
 })
 
 
+export const createContactMessageBodyNameMin = 2;
+export const createContactMessageBodyNameMax = 120;
+
+export const createContactMessageBodyPhoneMax = 40;
+
+export const createContactMessageBodySubjectMax = 160;
+
+export const createContactMessageBodyMessageMin = 5;
+export const createContactMessageBodyMessageMax = 4000;
+
+
+
+export const CreateContactMessageBody = zod.object({
+  "name": zod.string().min(createContactMessageBodyNameMin).max(createContactMessageBodyNameMax),
+  "email": zod.string().email(),
+  "phone": zod.string().max(createContactMessageBodyPhoneMax).optional(),
+  "subject": zod.string().max(createContactMessageBodySubjectMax).optional(),
+  "message": zod.string().min(createContactMessageBodyMessageMin).max(createContactMessageBodyMessageMax)
+})
+
+export const CreateContactMessageResponse = zod.object({
+  "id": zod.string().uuid(),
+  "reference": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+export const listContactMessagesResponseOneNameMin = 2;
+export const listContactMessagesResponseOneNameMax = 120;
+
+export const listContactMessagesResponseOnePhoneMax = 40;
+
+export const listContactMessagesResponseOneSubjectMax = 160;
+
+export const listContactMessagesResponseOneMessageMin = 5;
+export const listContactMessagesResponseOneMessageMax = 4000;
+
+
+
+export const ListContactMessagesResponseItem = zod.object({
+  "name": zod.string().min(listContactMessagesResponseOneNameMin).max(listContactMessagesResponseOneNameMax),
+  "email": zod.string().email(),
+  "phone": zod.string().max(listContactMessagesResponseOnePhoneMax).optional(),
+  "subject": zod.string().max(listContactMessagesResponseOneSubjectMax).optional(),
+  "message": zod.string().min(listContactMessagesResponseOneMessageMin).max(listContactMessagesResponseOneMessageMax)
+}).and(zod.object({
+  "id": zod.string().uuid(),
+  "reference": zod.string(),
+  "status": zod.enum(['new', 'processing', 'closed']),
+  "createdAt": zod.coerce.date()
+}))
+export const ListContactMessagesResponse = zod.array(ListContactMessagesResponseItem)
+
+
+export const UpdateContactMessageStatusParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const UpdateContactMessageStatusBody = zod.object({
+  "status": zod.enum(['new', 'processing', 'closed'])
+})
+
+export const updateContactMessageStatusResponseOneNameMin = 2;
+export const updateContactMessageStatusResponseOneNameMax = 120;
+
+export const updateContactMessageStatusResponseOnePhoneMax = 40;
+
+export const updateContactMessageStatusResponseOneSubjectMax = 160;
+
+export const updateContactMessageStatusResponseOneMessageMin = 5;
+export const updateContactMessageStatusResponseOneMessageMax = 4000;
+
+
+
+export const UpdateContactMessageStatusResponse = zod.object({
+  "name": zod.string().min(updateContactMessageStatusResponseOneNameMin).max(updateContactMessageStatusResponseOneNameMax),
+  "email": zod.string().email(),
+  "phone": zod.string().max(updateContactMessageStatusResponseOnePhoneMax).optional(),
+  "subject": zod.string().max(updateContactMessageStatusResponseOneSubjectMax).optional(),
+  "message": zod.string().min(updateContactMessageStatusResponseOneMessageMin).max(updateContactMessageStatusResponseOneMessageMax)
+}).and(zod.object({
+  "id": zod.string().uuid(),
+  "reference": zod.string(),
+  "status": zod.enum(['new', 'processing', 'closed']),
+  "createdAt": zod.coerce.date()
+}))
+
+
 export const getDashboardResponseNewRequestsMin = 0;
+
+export const getDashboardResponseNewContactMessagesMin = 0;
 
 export const getDashboardResponseQuotesToFollowMin = 0;
 
@@ -159,6 +249,7 @@ export const getDashboardResponseUnpaidInvoicesCentsMin = 0;
 
 export const GetDashboardResponse = zod.object({
   "newRequests": zod.number().int().min(getDashboardResponseNewRequestsMin),
+  "newContactMessages": zod.number().int().min(getDashboardResponseNewContactMessagesMin),
   "quotesToFollow": zod.number().int().min(getDashboardResponseQuotesToFollowMin),
   "upcomingTransports": zod.number().int().min(getDashboardResponseUpcomingTransportsMin),
   "pendingTripRequests": zod.number().int().min(getDashboardResponsePendingTripRequestsMin),
