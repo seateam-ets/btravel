@@ -1047,3 +1047,11 @@ input,select,textarea {
 @media(prefers-reduced-motion:reduce) {
   *,*::before,*::after { animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important; }
 }
+
+/* détail d'une demande de devis */
+.request-details { font-size:14px; color:#1b2530; }
+.request-details dl { margin:0; display:grid; gap:6px; }
+.request-details dl div { display:grid; grid-template-columns:150px 1fr; gap:10px; }
+.request-details dt { color:#5f6a74; }
+.request-details dd { margin:0; font-weight:600; }
+.request-details a { text-decoration:underline; }

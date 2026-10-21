@@ -833,7 +833,7 @@ function AdminModulePage({ path, title, subtitle, columns, Shell }: ModuleProps)
   const rowActions = (row: Row) => {
     const id = String(row.id);
     if (path === "/admin/demandes") {
-      return <div className="row-actions"><select aria-label="Statut de la demande" value={String(row.status)} onChange={(event) => void updateRequest(id, event.target.value)}><option value="new">Nouvelle</option><option value="processing">En cours</option><option value="quoted">Devis envoyé</option><option value="closed">Clôturée</option></select></div>;
+      return <div className="row-actions"><select aria-label="Statut de la demande" value={String(row.status)} onChange={(event) => void updateRequest(id, event.target.value)}><option value="new">Nouvelle</option><option value="processing">En cours</option><option value="quoted">Devis envoyé</option><option value="closed">Clôturée</option></select><RequestDetails row={row}/></div>;
     }
     if (path === "/admin/devis") {
       const status = String(row.status);
@@ -1213,3 +1213,24 @@ function exportInvoices(rows: Invoice[]): void {
 }
 
 export default AdminModulePage;
+
+function RequestDetails({ row }: { row: Row }) {
+  const when = (value: unknown) => value ? new Intl.DateTimeFormat("fr-BE", { dateStyle: "full", timeStyle: "short", timeZone: "Europe/Brussels" }).format(new Date(String(value))) : "—";
+  const lines: [string, string][] = [
+    ["Contact", String(row.contactName ?? "—")],
+    ["Organisation", String(row.organizationName || "—")],
+    ["Téléphone", String(row.phone ?? "—")],
+    ["E-mail", String(row.email ?? "—")],
+    ["Type de transport", String(row.transportType ?? "—")],
+    ["Trajet", row.journeyType === "return" ? "Aller-retour" : "Aller simple"],
+    ["Départ", when(row.departureAt)],
+    ["Retour", when(row.returnAt)],
+    ["Prise en charge", String(row.pickupAddress ?? "—")],
+    ["Destination", String(row.destination ?? "—")],
+    ["Passagers", String(row.passengerCount ?? "—")],
+  ];
+  return <details className="row-edit"><summary>Voir la demande</summary><div className="row-action-details request-details">
+    <dl>{lines.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{label === "Téléphone" && value !== "—" ? <a href={`tel:${value.replace(/\s/g, "")}`}>{value}</a> : label === "E-mail" && value !== "—" ? <a href={`mailto:${value}`}>{value}</a> : value}</dd></div>)}</dl>
+    {row.notes ? <p style={{ whiteSpace: "pre-line" }}><strong>Informations complémentaires</strong><br/>{String(row.notes)}</p> : null}
+  </div></details>;
+}

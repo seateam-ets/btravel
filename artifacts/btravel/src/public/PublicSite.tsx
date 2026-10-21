@@ -1,33 +1,17 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Link, Redirect } from 'wouter';
-import { ArrowLeft, ArrowRight, ArrowUpRight, CalendarDays, Check, CircleAlert, Mail, MapPin, Menu, Phone, RefreshCw, Users, X } from 'lucide-react';
-import { useListPublicTrips, useGetPublicTrip, createQuoteRequest, createTripRequest } from '@workspace/api-client-react';
-import type { PublicTrip, QuoteRequestInput, TripRequestInput } from '@workspace/api-client-react';
+import { Link, Redirect, useLocation } from 'wouter';
+import { ArrowLeft, ArrowRight, ArrowUpRight, Briefcase, BusFront, CalendarDays, Check, CircleAlert, Globe2, GraduationCap, Mail, MapPin, Menu, Phone, RefreshCw, ShieldCheck, Star, Ticket, Users, X } from 'lucide-react';
+import { useListPublicTrips, useGetPublicTrip, createTripRequest } from '@workspace/api-client-react';
+import type { PublicTrip, TripRequestInput } from '@workspace/api-client-react';
+import { categoryForPassengers, fleetCategories, transportTypes } from './fleet';
+import { QuoteForm } from './QuoteForm';
 import content from '@/content/site-content.json';
 import './scout-public.css';
 
 /* ---------- helpers ---------- */
 const money = (cents?: number) => cents == null ? '' : new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(cents / 100);
 const date = (value?: string) => value ? new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(value)) : '';
-function dateTimeLocalToIso(value: string): string {
-  const [day, time] = value.split('T');
-  const [year, month, dayOfMonth] = day.split('-').map(Number);
-  const [hour, minute] = time.split(':').map(Number);
-  const localAsUtc = Date.UTC(year, month - 1, dayOfMonth, hour, minute);
-  const parts = new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'Europe/Brussels',
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
-  }).formatToParts(new Date(localAsUtc));
-  const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
-  const representedAsUtc = Date.UTC(
-    Number(values.year), Number(values.month) - 1, Number(values.day),
-    Number(values.hour), Number(values.minute), Number(values.second),
-  );
-  return new Date(localAsUtc - (representedAsUtc - localAsUtc)).toISOString();
-}
-
 const A = content.address;
 const PHONE_HREF = 'tel:+3210650201';
 const events = content.events.map(event => ({
@@ -113,7 +97,7 @@ function PublicNav() {
     </div>
     <span className="sc-tick sc-tick-mid" aria-hidden />
     <div className="sc-nav-side">
-      <Link href="/demande-de-transport" className="sc-nav-cta" onClick={close}>Devis</Link>
+      <Link href="/demande-de-transport" className="sc-nav-cta" onClick={close}>Demander un devis</Link>
       <button className="sc-burger" aria-label={open ? 'Fermer le menu' : 'Ouvrir le menu'} aria-expanded={open} onClick={() => setOpen(v => !v)}>{open ? <X size={16} /> : <Menu size={16} />}</button>
     </div>
     <span className="sc-tick sc-tick-r" aria-hidden />
@@ -179,83 +163,158 @@ function ArchiveGrid() {
 }
 
 /* ---------- Home ---------- */
+const services = [
+  { icon: GraduationCap, title: 'Écoles', text: 'Sorties scolaires, classes vertes, musées et trajets réguliers, avec des chauffeurs habitués aux enfants.', type: 'Sortie scolaire' },
+  { icon: Users, title: 'Groupes et associations', text: 'Clubs sportifs, mouvements de jeunesse, seniors : un autocar adapté à la taille de votre groupe.', type: 'Excursion de groupe' },
+  { icon: Briefcase, title: 'Entreprises', text: 'Séminaires, team buildings, transferts de personnel ou de clients, en Belgique et à l’étranger.', type: 'Transport d’entreprise' },
+  { icon: Ticket, title: 'Événements et navettes', text: 'Mariages, festivals, salons : des navettes fiables, à l’heure, pour tous vos invités.', type: 'Navette événement' },
+  { icon: Globe2, title: 'Voyages à l’étranger', text: 'Séjours de plusieurs jours en France, aux Pays-Bas, en Allemagne et partout en Europe.', type: 'Voyage à l’étranger' },
+  { icon: MapPin, title: 'Excursions organisées', text: 'Marchés de Noël, parcs d’attractions, city trips : rejoignez nos voyages au départ de Perwez.', href: '/voyages' },
+];
+
+function ExpressQuote() {
+  const [, navigate] = useLocation();
+  return <form className="sc-express" onSubmit={e => {
+    e.preventDefault();
+    const f = new FormData(e.currentTarget);
+    const q = new URLSearchParams();
+    for (const [key, value] of f.entries()) if (String(value).trim()) q.set(key, String(value));
+    navigate(`/demande-de-transport${q.size ? `?${q}` : ''}`);
+  }}>
+    <div className="sc-express-head"><span className="sc-mono">Devis gratuit</span><strong>Votre trajet en 1 minute</strong></div>
+    <label>Type de transport<select name="type" defaultValue=""><option value="">Choisir…</option>{transportTypes.map(t => <option key={t.value}>{t.value}</option>)}</select></label>
+    <div className="sc-express-row">
+      <label>Passagers<input name="passagers" type="number" min={1} max={999} inputMode="numeric" placeholder="45" /></label>
+      <label>Date<input name="date" type="date" /></label>
+    </div>
+    <label>Destination<input name="destination" placeholder="Ex. Pairi Daiza" /></label>
+    <button className="sc-btn sc-btn-dark sc-full">Continuer ma demande <ArrowRight size={16} /></button>
+    <a href={PHONE_HREF} className="sc-express-phone"><Phone size={14} /> Ou appelez-nous : {A.phone}</a>
+  </form>;
+}
+
+export function FleetChooser() {
+  const [passengers, setPassengers] = useState(45);
+  const [selected, setSelected] = useState(() => categoryForPassengers(45).id);
+  const [model, setModel] = useState(0);
+  const category = fleetCategories.find(c => c.id === selected) ?? fleetCategories[0];
+  const recommended = categoryForPassengers(passengers).id;
+  const pick = (id: string) => { setSelected(id); setModel(0); };
+  const onPassengers = (value: number) => { const n = Math.max(1, Math.min(83, value || 1)); setPassengers(n); pick(categoryForPassengers(n).id); };
+  const current = category.models[model] ?? category.models[0];
+  const quoteHref = `/demande-de-transport?passagers=${passengers}&vehicule=${encodeURIComponent(`${category.name} (${current.name})`)}`;
+  return <div className="sc-chooser">
+    <div className="sc-chooser-size">
+      <label htmlFor="pax"><span className="sc-mono">Combien êtes-vous ?</span><strong><output>{passengers}</output> passagers</strong></label>
+      <input id="pax" type="range" min={1} max={83} value={passengers} onChange={e => onPassengers(Number(e.target.value))} aria-valuetext={`${passengers} passagers`} />
+      <div className="sc-chooser-scale sc-mono"><span>1</span><span>20</span><span>35</span><span>60</span><span>83</span></div>
+    </div>
+    <div className="sc-chooser-tabs" role="tablist" aria-label="Catégories de véhicules">
+      {fleetCategories.map(c => <button key={c.id} role="tab" aria-selected={c.id === selected} className={`${c.id === selected ? 'is-on' : ''}`} onClick={() => pick(c.id)}>
+        <strong>{c.name}</strong><span>{c.seats}</span>{c.id === recommended && <em>Conseillé</em>}
+      </button>)}
+    </div>
+    <div className="sc-chooser-panel" role="tabpanel">
+      <div className="sc-chooser-media">
+        <img key={current.image} src={current.image} alt={`${current.name}, ${category.name} B-TRAVEL`} />
+        <span className="sc-chip">{current.name}</span>
+        {category.models.length > 1 && <div className="sc-chooser-thumbs">{category.models.map((m, i) => <button key={m.name} className={i === model ? 'is-on' : ''} onClick={() => setModel(i)} aria-label={`Voir ${m.name}`}><img src={m.image} alt="" loading="lazy" /></button>)}</div>}
+      </div>
+      <div className="sc-chooser-info">
+        <span className="sc-mono">{category.usage}</span>
+        <h3>{category.name}<small>{category.seats}</small></h3>
+        <p>{category.description}</p>
+        <ul>{category.highlights.map(h => <li key={h}><Check size={16} />{h}</li>)}</ul>
+        <p className="sc-chooser-models"><b>Modèles :</b> {category.models.map(m => m.name).join(' · ')}</p>
+        <Link href={quoteHref} className="sc-btn sc-btn-dark">Demander un devis pour {passengers} passagers <ArrowRight size={16} /></Link>
+        <small className="sc-chooser-note">Capacités indicatives selon le modèle ; la capacité exacte est confirmée dans votre devis.</small>
+      </div>
+    </div>
+  </div>;
+}
+
 export function Home() {
   const trips = useListPublicTrips();
   const list = trips.data ?? [];
   const hasApiCologne = list.some(isCologne);
   const reviews = content.reviews;
-  const fleet = content.fleet;
-  const newsletter = `mailto:${A.email}?subject=${encodeURIComponent('Inscription à la newsletter B-TRAVEL')}&body=${encodeURIComponent('Bonjour,\n\nJe souhaite recevoir les annonces des voyages organisés B-TRAVEL.\n\nNom :\n')}`;
   return <PublicLayout><main>
-    <section className="sc-hero">
+    <section className="sc-hero sc-hero-v2">
       <img src={content.heroImage} alt="Autocar B-TRAVEL" className="sc-hero-img sc-kenburns" />
-      <div className="sc-hero-shade" />
-      <div className="sc-hero-copy">
-        <span className="sc-mono sc-fade" style={{ animationDelay: '.2s' }}>Autocars · Perwez, Brabant wallon</span>
-        <h1 className="sc-fade" style={{ animationDelay: '.35s' }}>Sécurité et Confort.</h1>
-        <div className="sc-hero-actions sc-fade" style={{ animationDelay: '.55s' }}><Link href="/demande-de-transport" className="sc-btn sc-btn-light">Demander un devis <ArrowRight size={16} /></Link><Link href="/voyages" className="sc-btn sc-btn-ghost">Voyages organisés</Link></div>
+      <div className="sc-hero-shade sc-hero-shade-v2" />
+      <div className="sc-hero-grid">
+        <div className="sc-hero-copy-v2">
+          <span className="sc-mono sc-fade" style={{ animationDelay: '.15s' }}>Autocars avec chauffeur · Perwez, Brabant wallon</span>
+          <h1 className="sc-fade" style={{ animationDelay: '.3s' }}>Vos déplacements en autocar, en toute confiance.</h1>
+          <p className="sc-fade" style={{ animationDelay: '.45s' }}>Entreprise familiale depuis plus de 40 ans, B-TRAVEL transporte écoles, groupes, entreprises et voyageurs en Belgique et partout en Europe.</p>
+          <div className="sc-hero-actions sc-fade" style={{ animationDelay: '.6s' }}>
+            <Link href="/demande-de-transport" className="sc-btn sc-btn-sig">Demander un devis <ArrowRight size={16} /></Link>
+            <a href="#flotte" className="sc-btn sc-btn-ghost">Découvrir nos autocars</a>
+          </div>
+        </div>
+        <div className="sc-fade" style={{ animationDelay: '.7s' }}><ExpressQuote /></div>
       </div>
-      <div className="sc-hero-rule"><span /><span className="sc-mono">Écoles · Navettes · Étranger</span><span className="sc-mono">Active depuis plus de 40 ans</span></div>
-    </section>
-
-    <section className="sc-intro">
-      <Kicker n="01">Qui roule avec vous</Kicker>
-      <p className="sc-statement rv">Active depuis plus de 40 ans, <b>B-TRAVEL</b> est une entreprise familiale spécialisée dans le transport de passagers en autocar. La flotte de véhicules est située à Perwez dans la province du Brabant Wallon.</p>
-      <div className="sc-intro-grid">
-        <p className="rv">Vous êtes enseignant et vous devez organiser le transport de vos élèves vers un musée ? Vous avez besoin de navettes pour votre évènement ? Un voyage à l’étranger ? Quel que soit le motif de vos déplacements, nous sommes à votre service.</p>
-        <ul className="sc-spec rv"><li><span>Écoles</span>Sorties scolaires, musées</li><li><span>Évènements</span>Navettes de groupe</li><li><span>Étranger</span>Voyages en Europe</li><li><span>Capacité</span>Jusqu’à 83 places</li></ul>
-      </div>
-    </section>
-
-    <section className="sc-triptych">
-      {[
-        { n: '02', t: 'À propos', d: 'Depuis plus de 40 ans, B-TRAVEL accompagne écoles, entreprises et groupes dans tous leurs déplacements en Belgique et à l’étranger.', h: '/a-propos', img: content.historyImages[0] },
-        { n: '03', t: 'Nos véhicules', d: 'Découvrez notre flotte moderne et confortable, parfaitement entretenue pour garantir sécurité et bien-être.', h: '/nos-vehicules', img: fleet[1].image },
-        { n: '04', t: 'Voyages organisés', d: 'Explorez notre sélection d’excursions et circuits organisés en Belgique, France, Pays-Bas et au-delà.', h: '/voyages', img: upcomingEvent?.image ?? content.historyImages[2] },
-      ].map(c => <Link key={c.h} href={c.h} className="sc-panel rv"><img src={c.img} alt="" loading="lazy" /><div className="sc-panel-shade" /><span className="sc-mono">{c.n}</span><div className="sc-panel-copy"><h2>{c.t}</h2><p>{c.d}</p><span className="sc-textlink">Découvrir <ArrowRight size={15} /></span></div></Link>)}
+      <ul className="sc-hero-stats">
+        <li><strong>40+</strong><span>ans d’expérience familiale</span></li>
+        <li><strong>13</strong><span>modèles, du minibus au double étage</span></li>
+        <li><strong>83</strong><span>places dans nos plus grands autocars</span></li>
+        <li><strong><Star size={18} fill="currentColor" /> Excellent</strong><span>16 avis Google</span></li>
+      </ul>
     </section>
 
     <section className="sc-section">
-      <div className="sc-head"><div><Kicker n="05">Prochains départs</Kicker><h2 className="rv">Au départ de Perwez, Wavre et Bruxelles.</h2></div><Link href="/voyages" className="sc-textlink">Tous nos voyages organisés <ArrowRight size={15} /></Link></div>
+      <div className="sc-head"><div><Kicker n="01">Nos services</Kicker><h2 className="rv">Un autocar pour chaque projet.</h2></div><p className="sc-note">Vous êtes enseignant, responsable d’association ou organisateur d’événement ? Quel que soit le motif de vos déplacements, nous sommes à votre service.</p></div>
+      <div className="sc-services">{services.map((sv, i) => {
+        const Icon = sv.icon;
+        return <Link key={sv.title} href={sv.href ?? `/demande-de-transport?type=${encodeURIComponent(sv.type ?? '')}`} className="sc-service rv" style={{ transitionDelay: `${(i % 3) * 70}ms` }}>
+          <span className="sc-service-icon"><Icon size={22} /></span><h3>{sv.title}</h3><p>{sv.text}</p>
+          <span className="sc-textlink">{sv.href ? 'Voir les voyages' : 'Organiser ce transport'} <ArrowRight size={15} /></span>
+        </Link>;
+      })}</div>
+    </section>
+
+    <section className="sc-fleetzone" id="flotte">
+      <div className="sc-head sc-head-light"><div><Kicker n="02">Choisir son autocar</Kicker><h2 className="rv">Indiquez la taille de votre groupe, nous vous conseillons le bon véhicule.</h2></div><Link href="/nos-vehicules" className="sc-textlink">Toute la flotte <ArrowRight size={15} /></Link></div>
+      <FleetChooser />
+    </section>
+
+    <section className="sc-why">
+      <div><Kicker n="03">Pourquoi B-TRAVEL</Kicker><h2 className="rv">Sécurité et confort, depuis plus de 40 ans.</h2></div>
+      <ul>
+        <li className="rv"><ShieldCheck /><b>Sécurité d’abord</b><span>Véhicules entretenus et équipés des dernières technologies de sécurité ; chauffeurs respectant la réglementation sur les temps de conduite.</span></li>
+        <li className="rv"><Users /><b>Une entreprise familiale</b><span>Un interlocuteur direct qui connaît votre dossier, de la demande de devis au retour du groupe.</span></li>
+        <li className="rv"><BusFront /><b>Une flotte variée</b><span>Du minibus au double étage de 83 places : le véhicule adapté, sans payer de places inutiles.</span></li>
+        <li className="rv"><MapPin /><b>Ancrés en Brabant wallon</b><span>Dépôt à Perwez, départs depuis votre école, votre entreprise ou le lieu de votre choix.</span></li>
+      </ul>
+    </section>
+
+    <section className="sc-section sc-section-tint">
+      <div className="sc-head"><div><Kicker n="04">Prochains départs</Kicker><h2 className="rv">Voyages organisés au départ de Perwez, Wavre et Bruxelles.</h2></div><Link href="/voyages" className="sc-textlink">Tous nos voyages <ArrowRight size={15} /></Link></div>
       <TripCards trips={list} loading={trips.isLoading} error={trips.isError} retry={() => trips.refetch()} />
       {!trips.isLoading && !hasApiCologne && <AnnouncementCard />}
     </section>
 
-    <section className="sc-fleetstrip">
-      <div className="sc-head sc-head-light"><div><Kicker n="06">La flotte</Kicker><h2 className="rv">Treize modèles, un même soin.</h2></div><Link href="/nos-vehicules" className="sc-textlink">Voir les véhicules <ArrowRight size={15} /></Link></div>
-      <div className="sc-strip">{fleet.map((f, i) => <figure key={f.name + i}><img src={f.image} alt={f.name} loading="lazy" /><figcaption><span className="sc-mono">{String(i + 1).padStart(2, '0')}</span>{f.name}</figcaption></figure>)}</div>
-    </section>
-
-    <section className="sc-story">
-      <img src={content.historyImages[3]} alt="Autocar B-TRAVEL" loading="lazy" />
-      <div className="sc-hero-shade" />
-      <blockquote className="rv">« Nous insistons sur deux points en particulier : votre sécurité et votre confort. »<cite className="sc-mono">B-TRAVEL · Pourquoi nous choisir</cite></blockquote>
-    </section>
-
     <section className="sc-section sc-reviews">
-      <div className="sc-head"><div><Kicker n="07">Ce qu’ils disent de nous</Kicker><h2 className="rv">Avis Google, repris de l’ancien site.</h2></div><p className="sc-note">Instantané conservé de l’ancien site b-travel.be (affiché « Excellent, basée sur 16 avis »). Ce n’est pas une note en direct.</p></div>
-      <div className="sc-review-row">{reviews.filter(r => !r.text.startsWith('Avis sans')).map((r, i) => <figure key={r.name} className="sc-review rv" style={{ transitionDelay: `${i * 80}ms` }}><blockquote>« {r.text} »</blockquote><figcaption><span className="sc-avatar">{r.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</span><span>{r.name}<small className="sc-mono">{r.date} · Google</small></span></figcaption></figure>)}</div>
-      <div className="sc-ratings"><span className="sc-mono">Évaluations sans commentaire</span>{reviews.filter(r => r.text.startsWith('Avis sans')).map(r => <span key={r.name}>{r.name} <small className="sc-mono">{r.date}</small></span>)}</div>
+      <div className="sc-head"><div><Kicker n="05">Ce qu’ils disent de nous</Kicker><h2 className="rv">« Excellent », sur la base de 16 avis Google.</h2></div></div>
+      <div className="sc-review-row">{reviews.filter(r => !r.text.startsWith('Avis sans')).map((r, i) => <figure key={r.name} className="sc-review rv" style={{ transitionDelay: `${i * 80}ms` }}><div className="sc-stars" aria-label="5 étoiles">{[1, 2, 3, 4, 5].map(n => <Star key={n} size={14} fill="currentColor" />)}</div><blockquote>« {r.text} »</blockquote><figcaption><span className="sc-avatar">{r.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</span><span>{r.name}<small className="sc-mono">{r.date} · Google</small></span></figcaption></figure>)}</div>
     </section>
 
-    <section className="sc-newsletter">
-      <img src={content.historyImages[1]} alt="" loading="lazy" />
-      <div className="sc-news-card rv">
-        <Kicker n="08">Newsletter</Kicker>
-        <h2>Ne manquez aucun départ.</h2>
-        <p>Parcs d’attractions, journées shopping, marchés de Noël et city trips : recevez les annonces de nos voyages organisés dès leur ouverture.</p>
-        <a href={newsletter} className="sc-btn sc-btn-dark"><Mail size={16} /> Demander l’inscription par e-mail</a>
-        <small>Ouvre votre messagerie vers {A.email}. L’inscription est demandée par e-mail, elle n’est pas automatisée sur ce site.</small>
+    <section className="sc-quotezone" id="devis">
+      <div className="sc-quotezone-intro">
+        <Kicker n="06">Demande de devis</Kicker>
+        <h2 className="rv">Parlez-nous de votre trajet.</h2>
+        <p>Trois étapes, environ deux minutes. Nous vous répondons avec un devis personnalisé, gratuit et sans engagement.</p>
+        <ul className="sc-quotezone-list"><li><Check size={16} />Réponse par notre équipe, pas par un robot</li><li><Check size={16} />Prix validé au cas par cas</li><li><Check size={16} />Aucun paiement en ligne</li></ul>
+        <div className="sc-quotezone-contact"><a href={PHONE_HREF}><Phone size={16} />{A.phone}</a><a href={`mailto:${A.email}`}><Mail size={16} />{A.email}</a></div>
       </div>
+      <QuoteForm phone={A.phone} phoneHref={PHONE_HREF} />
     </section>
 
     <section className="sc-section sc-partners">
-      <Kicker n="09">Partenaires et réseaux</Kicker>
+      <Kicker n="07">Partenaires et réseaux</Kicker>
       <div className="sc-partner-row">{content.partners.map(p => <div className="sc-partner rv" key={p.name}><img src={p.image} alt={p.name} loading="lazy" /><p>{p.description}</p></div>)}
         <a className="sc-partner sc-fb rv" href={content.facebook} target="_blank" rel="noreferrer"><span className="sc-mono">Suivez-nous sur les réseaux</span><strong>Facebook · Autocars B-TRAVEL</strong><ArrowUpRight /></a></div>
     </section>
-
-    <section className="sc-cta-band"><h2 className="rv">Votre prochain trajet commence ici.</h2><div><Link href="/demande-de-transport" className="sc-btn sc-btn-light">Demander un devis <ArrowRight size={16} /></Link><a href={PHONE_HREF} className="sc-btn sc-btn-ghost"><Phone size={15} /> {A.phone}</a></div></section>
   </main></PublicLayout>;
 }
 
@@ -349,13 +408,16 @@ export function AboutPage() {
 
 /* ---------- Vehicles ---------- */
 export function VehiclesPage() {
-  const fleet = content.fleet;
   return <PublicLayout><main>
-    <PageHero image={fleet[0].image} kicker="Nos véhicules" title="Voyagez en toute sérénité." meta={['13 modèles', 'Jusqu’à 83 places']}><p>Nos autocars, allant jusqu’à 83 places, sont soigneusement sélectionnés pour offrir un maximum de confort et sont équipés des dernières technologies de sécurité.</p></PageHero>
-    <section className="sc-section">
-      <div className="sc-head"><div><Kicker n="01">La flotte</Kicker><h2>Du minibus au double étage.</h2></div></div>
-      <div className="sc-fleet">{fleet.map((f, i) => <figure key={f.name + i} className="sc-model rv" style={{ transitionDelay: `${(i % 3) * 60}ms` }}><div><img src={f.image} alt={f.name} loading="lazy" /></div><figcaption><span className="sc-mono">{String(i + 1).padStart(2, '0')} / 13</span><h3>{f.name}</h3></figcaption></figure>)}</div>
+    <PageHero image={content.fleet[0].image} kicker="Nos véhicules" title="Voyagez en toute sérénité." meta={['13 modèles', 'Jusqu’à 83 places']}><p>Nos autocars, allant jusqu’à 83 places, sont soigneusement sélectionnés pour offrir un maximum de confort et sont équipés des dernières technologies de sécurité.</p></PageHero>
+    <section className="sc-fleetzone">
+      <div className="sc-head sc-head-light"><div><Kicker n="01">Trouver le bon véhicule</Kicker><h2>Du minibus au double étage.</h2></div></div>
+      <FleetChooser />
     </section>
+    {fleetCategories.map((c, ci) => <section key={c.id} className={`sc-section${ci % 2 ? ' sc-section-tint' : ''}`}>
+      <div className="sc-head"><div><Kicker n={String(ci + 2).padStart(2, '0')}>{c.seats}</Kicker><h2>{c.name}</h2></div><p className="sc-note">{c.description}</p></div>
+      <div className="sc-fleet">{c.models.map((f, i) => <figure key={f.name} className="sc-model rv" style={{ transitionDelay: `${(i % 3) * 60}ms` }}><div><img src={f.image} alt={f.name} loading="lazy" /></div><figcaption><h3>{f.name}</h3><Link className="sc-textlink" href={`/demande-de-transport?vehicule=${encodeURIComponent(`${c.name} (${f.name})`)}`}>Devis <ArrowRight size={14} /></Link></figcaption></figure>)}</div>
+    </section>)}
     <section className="sc-cta-band"><h2>Quel véhicule pour votre groupe ?</h2><div><Link href="/demande-de-transport" className="sc-btn sc-btn-light">Demander un devis <ArrowRight size={16} /></Link></div></section>
   </main></PublicLayout>;
 }
@@ -374,7 +436,10 @@ export function Contact() {
         <div className="rv"><span className="sc-mono">TVA</span><strong>{A.vat}</strong></div>
         <a href={content.facebook} target="_blank" rel="noreferrer" className="rv"><span className="sc-mono">Facebook</span><strong>Autocars B-TRAVEL</strong></a>
       </div>
-      <div className="sc-actions"><Link href="/demande-de-transport" className="sc-btn sc-btn-dark">Demander un devis <ArrowRight size={16} /></Link><Link href="/voyages" className="sc-btn sc-btn-outline">Voir les voyages</Link></div>
+    </section>
+    <section className="sc-quotezone">
+      <div className="sc-quotezone-intro"><Kicker n="02">Écrivez-nous</Kicker><h2>Une demande de transport ?</h2><p>Remplissez le formulaire : votre demande arrive directement chez notre équipe, qui vous recontacte rapidement.</p></div>
+      <QuoteForm phone={A.phone} phoneHref={PHONE_HREF} />
     </section>
   </main></PublicLayout>;
 }
@@ -441,52 +506,17 @@ export function TripDetail({ id }: { id: string }) {
   </main></PublicLayout>;
 }
 
-/* ---------- Quote form (logic preserved) ---------- */
+/* ---------- Quote page ---------- */
 export function TransportRequest() {
-  const idempotency = useRef({ payload: '', key: crypto.randomUUID() });
-  const create = useMutation({
-    mutationFn: ({ data, key }: { data: QuoteRequestInput; key: string }) => createQuoteRequest(data, { headers: { 'Idempotency-Key': key } }),
-  });
-  const [sent, setSent] = useState(false);
-  const [journeyType, setJourneyType] = useState<QuoteRequestInput['journeyType']>('one_way');
-  const submit = (form: FormData) => {
-    const returnValue = String(form.get('return') || '');
-    const data: QuoteRequestInput = {
-      contactName: String(form.get('name')),
-      organizationName: String(form.get('org') || ''),
-      email: String(form.get('email')),
-      phone: String(form.get('phone')),
-      transportType: String(form.get('type')),
-      journeyType,
-      departureAt: dateTimeLocalToIso(String(form.get('depart'))),
-      returnAt: journeyType === 'return' && returnValue ? dateTimeLocalToIso(returnValue) : undefined,
-      pickupAddress: String(form.get('pickup')),
-      destination: String(form.get('destination')),
-      passengerCount: Number(form.get('passengers')),
-      notes: [
-        String(form.get('notes') || ''),
-        ...([['Adresse de facturation (rue et numéro)', 'billingStreet'], ['Code postal', 'billingPostal'], ['Ville', 'billingCity'], ['TVA', 'vat']] as const)
-          .map(([label, key]) => [label, String(form.get(key) || '').trim()] as const)
-          .filter(([, v]) => v).map(([label, v]) => `${label} : ${v}`),
-      ].filter(Boolean).join('\n'),
-    };
-    const payload = JSON.stringify(data);
-    if (idempotency.current.payload && idempotency.current.payload !== payload) idempotency.current = { payload, key: crypto.randomUUID() };
-    else idempotency.current.payload = payload;
-    create.mutate({ data, key: idempotency.current.key }, { onSuccess: () => setSent(true) });
-  };
   return <PublicLayout><main>
-    <PageHero image={content.fleet[2].image} kicker="Devis en ligne" title="Parlons de votre trajet." meta={['Réponse par l’équipe', 'Sans engagement']}><p>Décrivez votre besoin. Cette demande ne constitue pas une réservation : notre équipe reviendra vers vous avec un devis.</p></PageHero>
-    <section className="sc-detail">
-      {sent ? <div className="sc-success sc-success-lg"><Check /><div><strong>Demande bien reçue.</strong><p>Notre équipe étudie votre trajet et vous recontactera.</p></div></div> :
-        <form className="sc-quote" onSubmit={e => { e.preventDefault(); submit(new FormData(e.currentTarget)); }}>
-          <div className="sc-form-title"><span>01</span>Vos coordonnées</div>
-          <div className="sc-grid2"><label>Nom / référent<input name="name" required minLength={2} /></label><label>Organisation <span className="sc-opt">facultatif</span><input name="org" /></label><label>E-mail<input name="email" type="email" required /></label><label>Téléphone<input name="phone" required minLength={6} /></label><label className="sc-span">Rue et numéro <span className="sc-opt">facultatif</span><input name="billingStreet" autoComplete="street-address" /></label><label>Code postal <span className="sc-opt">facultatif</span><input name="billingPostal" autoComplete="postal-code" /></label><label>Ville <span className="sc-opt">facultatif</span><input name="billingCity" autoComplete="address-level2" /></label><label className="sc-span">TVA si assujetti <span className="sc-opt">facultatif</span><input name="vat" /></label></div>
-          <div className="sc-form-title"><span>02</span>Votre trajet</div>
-          <div className="sc-grid2"><label>Type de transport<input name="type" placeholder="Autocar, minibus…" required /></label><label>Type de trajet<select name="journey" value={journeyType} onChange={e => setJourneyType(e.target.value as QuoteRequestInput['journeyType'])}><option value="one_way">Aller simple</option><option value="return">Aller-retour</option></select></label><label>Départ<input name="depart" type="datetime-local" required /></label><label>Retour <span className="sc-opt">si aller-retour</span><input name="return" type="datetime-local" required={journeyType === 'return'} /></label><label>Lieu de prise en charge<input name="pickup" required /></label><label>Destination<input name="destination" required /></label><label>Nombre de passagers<input name="passengers" type="number" min="1" required /></label><label className="sc-span">Précisions <span className="sc-opt">facultatif</span><textarea name="notes" rows={4} /></label></div>
-          <button className="sc-btn sc-btn-dark" disabled={create.isPending}>{create.isPending ? 'Envoi…' : 'Envoyer ma demande'} <ArrowRight size={16} /></button>
-          {create.isError && <p className="sc-error">Impossible d’envoyer la demande. Merci de réessayer.</p>}
-        </form>}
+    <PageHero image={content.fleet[2].image} kicker="Devis gratuit" title="Parlons de votre trajet." meta={['Réponse par l’équipe', 'Sans engagement']}><p>Décrivez votre besoin en trois étapes. Cette demande ne constitue pas une réservation : notre équipe revient vers vous avec un devis.</p></PageHero>
+    <section className="sc-quotezone sc-quotezone-page">
+      <div className="sc-quotezone-intro">
+        <h2>Comment ça marche ?</h2>
+        <ol className="sc-howto"><li><b>Vous décrivez</b> votre trajet en deux minutes.</li><li><b>Nous étudions</b> l’itinéraire et choisissons le véhicule adapté.</li><li><b>Vous recevez</b> un devis personnalisé, sans engagement.</li></ol>
+        <div className="sc-quotezone-contact"><a href={PHONE_HREF}><Phone size={16} />{A.phone}</a><a href={`mailto:${A.email}`}><Mail size={16} />{A.email}</a></div>
+      </div>
+      <QuoteForm phone={A.phone} phoneHref={PHONE_HREF} />
     </section>
   </main></PublicLayout>;
 }
