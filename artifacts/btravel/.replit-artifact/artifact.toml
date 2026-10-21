@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "B-TRAVEL"
+description = "Site public et espace d’administration intégrés pour B-TRAVEL, transporteur familial en autocar. Le site présente les services et voyages, tandis que l’administration sécurise les demandes, devis, transports, factures et inscriptions."
+version = "1.0.0"
+id = "artifacts/btravel"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22731
+
+[services.development]
+run = "pnpm --filter @workspace/btravel run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/btravel", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/btravel/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22731"
+BASE_PATH = "/"
