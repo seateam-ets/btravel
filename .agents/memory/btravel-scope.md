@@ -32,3 +32,9 @@ Le domaine final de production n’est pas encore décidé.
 **Why:** L’utilisateur a choisi de trancher ce point plus tard.
 
 **How to apply:** Ne pas supposer que le site passera sur `b-travel.be` et ne pas préparer de bascule ou de redirections de production sans validation ultérieure.
+
+La référence visuelle demandée est `https://www.scoutmotors.com/`. Le design doit se baser sur ce site, pas seulement sur une interprétation générique du voyage. Reprendre tout le contenu métier du site B-TRAVEL existant, pas uniquement des résumés.
+
+**Why:** L’utilisateur a répété ces deux exigences après la première version.
+
+**How to apply:** Examiner directement la référence et comparer les pages du site source avant de considérer la reprise comme complète. Inclure les programmes publics archivés sans les confondre avec une migration d’anciens dossiers clients ou réservations.

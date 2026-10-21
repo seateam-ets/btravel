@@ -1,1 +1,1 @@
-- [Cadrage B-TRAVEL](btravel-scope.md) — site public et administration simple ; validation avant développement et questionnaire avant direction artistique définitive.
+- [Cadrage B-TRAVEL](btravel-scope.md) — site public et administration simple ; référence Scout Motors et reprise complète du contenu métier du site existant.
