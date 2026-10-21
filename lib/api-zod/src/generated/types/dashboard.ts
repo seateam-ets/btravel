@@ -12,6 +12,8 @@ export interface Dashboard {
   /** @minimum 0 */
   newRequests: number;
   /** @minimum 0 */
+  newContactMessages: number;
+  /** @minimum 0 */
   quotesToFollow: number;
   /** @minimum 0 */
   upcomingTransports: number;

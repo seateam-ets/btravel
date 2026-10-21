@@ -28,6 +28,9 @@ import type {
   ClientInput,
   ClientUpdate,
   ConflictResponse,
+  ContactMessage,
+  ContactMessageInput,
+  ContactMessageStatusInput,
   Dashboard,
   Document,
   DocumentInput,
@@ -485,6 +488,242 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getCreateTripRequestMutationOptions(options));
+    }
+
+export const getCreateContactMessageUrl = () => {
+
+
+
+
+  return `/api/contact-messages`
+}
+
+export const createContactMessage = async (contactMessageInput: ContactMessageInput, options?: Parameters<typeof customFetch>[1]): Promise<SubmissionReceipt> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<SubmissionReceipt>(getCreateContactMessageUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(contactMessageInput)
+  }
+);}
+
+
+
+
+
+export const getCreateContactMessageMutationKey = () => ['createContactMessage'] as const;
+
+export const getCreateContactMessageMutationOptions = <TError = ErrorType<BadRequestResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createContactMessage>>, TError,CreateContactMessageMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createContactMessage>>, TError,CreateContactMessageMutationVariables, TContext> => {
+
+const mutationKey = getCreateContactMessageMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createContactMessage>>, CreateContactMessageMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createContactMessage(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateContactMessageMutationResult = NonNullable<Awaited<ReturnType<typeof createContactMessage>>>
+    export type CreateContactMessageMutationBody = BodyType<ContactMessageInput>
+    export type CreateContactMessageMutationError = ErrorType<BadRequestResponse>
+    export type CreateContactMessageMutationVariables = {data: BodyType<ContactMessageInput>}
+
+    export const useCreateContactMessage = <TError = ErrorType<BadRequestResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createContactMessage>>, TError,CreateContactMessageMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createContactMessage>>,
+        TError,
+        CreateContactMessageMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateContactMessageMutationOptions(options));
+    }
+
+export const getListContactMessagesUrl = () => {
+
+
+
+
+  return `/api/admin/contact-messages`
+}
+
+export const listContactMessages = async ( options?: Parameters<typeof customFetch>[1]): Promise<ContactMessage[]> => {
+
+  return customFetch<ContactMessage[]>(getListContactMessagesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListContactMessagesQueryKey = () => {
+    return [
+    `/api/admin/contact-messages`
+    ] as const;
+    }
+
+
+export const getListContactMessagesQueryOptions = <TData = Awaited<ReturnType<typeof listContactMessages>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listContactMessages>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListContactMessagesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listContactMessages>>> = ({ signal }) => listContactMessages({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listContactMessages>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListContactMessagesQueryResult = NonNullable<Awaited<ReturnType<typeof listContactMessages>>>
+export type ListContactMessagesQueryError = ErrorType<unknown>
+
+
+
+export function useListContactMessages<TData = Awaited<ReturnType<typeof listContactMessages>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listContactMessages>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListContactMessagesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateContactMessageStatusUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/contact-messages/${id}/status`
+}
+
+export const updateContactMessageStatus = async (id: string,
+    contactMessageStatusInput: ContactMessageStatusInput, options?: Parameters<typeof customFetch>[1]): Promise<ContactMessage> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ContactMessage>(getUpdateContactMessageStatusUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(contactMessageStatusInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateContactMessageStatusMutationKey = () => ['updateContactMessageStatus'] as const;
+
+export const getUpdateContactMessageStatusMutationOptions = <TError = ErrorType<NotFoundResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateContactMessageStatus>>, TError,UpdateContactMessageStatusMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateContactMessageStatus>>, TError,UpdateContactMessageStatusMutationVariables, TContext> => {
+
+const mutationKey = getUpdateContactMessageStatusMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateContactMessageStatus>>, UpdateContactMessageStatusMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateContactMessageStatus(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateContactMessageStatusMutationResult = NonNullable<Awaited<ReturnType<typeof updateContactMessageStatus>>>
+    export type UpdateContactMessageStatusMutationBody = BodyType<ContactMessageStatusInput>
+    export type UpdateContactMessageStatusMutationError = ErrorType<NotFoundResponse>
+    export type UpdateContactMessageStatusMutationVariables = {id: string;data: BodyType<ContactMessageStatusInput>}
+
+    export const useUpdateContactMessageStatus = <TError = ErrorType<NotFoundResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateContactMessageStatus>>, TError,UpdateContactMessageStatusMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateContactMessageStatus>>,
+        TError,
+        UpdateContactMessageStatusMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateContactMessageStatusMutationOptions(options));
     }
 
 export const getGetDashboardUrl = () => {

@@ -21,4 +21,4 @@ export * from "./core";
 export * from "./transport";
 export * from "./trips";
 export * from "./billing";
-export * from "./documents";
+export * from "./documents";export * from "./contact";

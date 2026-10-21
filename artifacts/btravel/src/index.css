@@ -1256,3 +1256,15 @@ body { font-family:var(--font-adventure); font-feature-settings:"clig" 0,"liga" 
 .upcoming-when::first-letter { text-transform:uppercase; }
 @media (max-width: 760px) { .table-wrap td .status-tag { justify-self:start; } }
 .schedule-tabs button { color:#151515; } .schedule-tabs button.selected { color:#fff; }
+.metric-grid-6 { grid-template-columns:repeat(3,1fr); }
+.metric-grid-6 .metric-card { min-height:140px; }
+.metric-grid-6 .metric-card>strong { font-size:clamp(28px,2.6vw,40px); }
+@media (max-width: 760px) { .metric-grid-6 { grid-template-columns:1fr 1fr; } }
+/* fiche d'un message / d'une demande : lisible dans la colonne Actions */
+.actions-cell { min-width:300px; }
+.request-details { min-width:280px; max-width:420px; }
+.request-details dl div { grid-template-columns:1fr; gap:0; }
+.request-details dd { overflow-wrap:anywhere; }
+.request-details .row-actions { flex-wrap:wrap; }
+.request-details a.button { text-decoration:none; }
+.admin-shell a.button-orange { color:#fff; }

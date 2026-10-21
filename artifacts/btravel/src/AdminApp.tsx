@@ -9,7 +9,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import { Link, Redirect, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
-import { ArrowDownRight, ArrowRight, ArrowUpRight, BusFront, CalendarDays, Check, ChevronDown, CircleAlert, Clock3, FileText, LogOut, MapPin, Menu, Plus, RefreshCw, Search, ShieldCheck, Users, X } from 'lucide-react';
+import { Mail, ArrowDownRight, ArrowRight, ArrowUpRight, BusFront, CalendarDays, Check, ChevronDown, CircleAlert, Clock3, FileText, LogOut, MapPin, Menu, Plus, RefreshCw, Search, ShieldCheck, Users, X } from 'lucide-react';
 const AdminModulePage = lazy(() => import('@/components/admin-module-page'));
 import {
   useListPublicTrips, useGetPublicTrip, useGetDashboard, useListClients, useListQuoteRequests,
@@ -87,7 +87,7 @@ function Brand({ light = false }: { light?: boolean }) {
 // Les 6 rubriques du cahier des charges, plus Paramètres.
 const navGroups: { name: string; items: [string, string, string][] }[] = [
   {name:'Accueil', items:[['/admin','Tableau de bord','◫'],['/admin/taches','Rappels et tâches','✓']]},
-  {name:'Demandes et devis', items:[['/admin/demandes','Demandes','↗'],['/admin/devis','Devis','▤']]},
+  {name:'Demandes et devis', items:[['/admin/demandes','Demandes de devis','↗'],['/admin/contacts','Demandes de contact','✉'],['/admin/devis','Devis','▤']]},
   {name:'Planning des trajets', items:[['/admin/transports','Planning','⇄'],['/admin/trajets-recurrents','Trajets réguliers','↻']]},
   {name:'Clients', items:[['/admin/clients','Clients','♧'],['/admin/documents','Documents','▧']]},
   {name:'Facturation', items:[['/admin/factures','Factures','€']]},
@@ -163,8 +163,9 @@ function Dashboard() {
    <Link href="/admin/devis?nouveau=1" className="quick-action"><FileText size={20}/><span><b>Nouveau devis</b><small>À partir d’une demande</small></span></Link>
    <Link href="/admin/transports?nouveau=1" className="quick-action"><BusFront size={20}/><span><b>Nouveau transport</b><small>Ajouter au planning</small></span></Link>
   </div>
-  <div className="metric-grid metric-grid-5">
-   <Metric title="Nouvelles demandes" value={d.newRequests} label="À examiner" icon={<FileText/>} color="orange" href="/admin/demandes"/>
+  <div className="metric-grid metric-grid-6">
+   <Metric title="Nouvelles demandes de devis" value={d.newRequests} label="À examiner" icon={<FileText/>} color="orange" href="/admin/demandes"/>
+   <Metric title="Messages de contact" value={d.newContactMessages} label="Non lus" icon={<Mail/>} color="blue" href="/admin/contacts"/>
    <Metric title="Devis à relancer" value={d.quotesToFollow} label="En attente de réponse" icon={<Clock3/>} color="blue" href="/admin/devis"/>
    <Metric title="Transports à venir" value={d.upcomingTransports} label="Planifiés" icon={<BusFront/>} color="sand" href="/admin/transports"/>
    <Metric title="Inscriptions à confirmer" value={d.pendingTripRequests} label="Voyages" icon={<Users/>} color="green" href="/admin/inscriptions"/>
@@ -181,6 +182,7 @@ function Metric({title,value,label,icon,color,href}:{title:string;value:number|s
 type Row=Record<string,unknown>;
 const modules:Record<string,{title:string;subtitle:string;columns:string[]}> = {
  '/admin/demandes':{title:'Demandes',subtitle:'Les demandes reçues par le site ou ajoutées après un appel.',columns:['Contact','Trajet','Date','Passagers','Statut','Référence']},
+ '/admin/contacts':{title:'Demandes de contact',subtitle:'Les messages envoyés depuis le formulaire de contact du site.',columns:['Contact','Sujet','Reçu le','Statut']},
  '/admin/devis':{title:'Devis',subtitle:'Les devis préparés, envoyés et acceptés.',columns:['Demande','Montant','Validité','Statut','Référence']},
  '/admin/clients':{title:'Clients',subtitle:'Coordonnées et historique de vos clients.',columns:['Nom','Organisation','E-mail','Téléphone','Créé le']},
  '/admin/transports':{title:'Planning',subtitle:'Les transports par jour, semaine ou mois.',columns:['Client','Trajet','Départ','Passagers','Statut','Référence']},

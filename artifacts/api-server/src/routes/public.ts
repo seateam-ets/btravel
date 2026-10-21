@@ -3,6 +3,7 @@ import { Router, type IRouter, type Request, type Response } from "express";
 import * as api from "@workspace/api-zod";
 import { randomUUID } from "node:crypto";
 import {
+  contactMessages,
   db,
   quoteRequests,
   tripRequests,
@@ -198,6 +199,43 @@ router.post("/quote-requests", async (req, res): Promise<void> => {
   } catch (error) {
     req.log.error({ err: error }, "Public quote request could not be saved");
     res.status(500).json({ error: "La demande n’a pas pu être enregistrée. Réessayez." });
+  }
+});
+
+router.post("/contact-messages", async (req, res): Promise<void> => {
+  const parsed = api.CreateContactMessageBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Vérifiez votre nom, votre e-mail et votre message." });
+    return;
+  }
+  if (!limitPublicSubmissions(req, res)) return;
+  const input = parsed.data;
+  try {
+    const id = randomUUID();
+    const formattedReference = reference("MSG", id);
+    const [created] = await db
+      .insert(contactMessages)
+      .values({
+        id,
+        reference: formattedReference,
+        name: input.name.trim(),
+        email: input.email.trim().toLowerCase(),
+        phone: input.phone?.trim() || null,
+        subject: input.subject?.trim() || null,
+        message: input.message.trim(),
+      })
+      .returning();
+    await recordActivity(`Nouvelle demande de contact de ${created.name}`);
+    res.status(201).json(
+      api.CreateContactMessageResponse.parse({
+        id: created.id,
+        reference: created.reference,
+        createdAt: created.createdAt,
+      }),
+    );
+  } catch (error) {
+    req.log.error({ err: error }, "Contact message could not be saved");
+    res.status(500).json({ error: "Le message n’a pas pu être envoyé. Réessayez." });
   }
 });
 
