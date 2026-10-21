@@ -1,0 +1,281 @@
+PROJET B-TRAVEL – Refonte complète du site web et création d'un espace d'administration
+1. Contexte du projet
+Je souhaite réaliser une refonte graphique et fonctionnelle complète du site web de B-TRAVEL.
+Site actuel : https://b-travel.be/
+B-TRAVEL est une entreprise familiale belge active depuis plus de 40 ans, spécialisée dans le transport de passagers en autocar. Sa flotte est située à Perwez, en Brabant wallon.
+L'entreprise propose notamment :
+
+Des transports scolaires et excursions pour les écoles.
+Des transports pour les groupes et associations.
+Des navettes pour les événements.
+Des transports pour les entreprises.
+Des voyages en Belgique et à l'étranger.
+Des excursions et voyages organisés.
+Le projet comprend deux parties complémentaires :
+PARTIE A – Refonte complète du site public
+Créer un site web moderne, esthétique, immersif, responsive et optimisé pour la conversion.
+PARTIE B – Développement d'un espace d'administration
+Créer un outil de gestion interne simple et intuitif, accessible via une connexion sécurisée par e-mail et mot de passe.
+Ces deux parties doivent être connectées et fonctionner ensemble.
+2. Analyse préalable
+Avant de commencer le développement :
+
+Analyse le site actuel : https://b-travel.be/
+Identifie les pages, contenus, services, fonctionnalités et parcours utilisateurs existants.
+Repère les éléments importants à conserver et ceux à améliorer.
+Analyse les ressources graphiques disponibles : logo, photos, couleurs, typographies et illustrations.
+Propose une nouvelle architecture du site adaptée à l'activité de B-TRAVEL.
+Analyse le projet de code existant et conserve les technologies pertinentes.
+Je vais également te transmettre un questionnaire complété par la cliente, qui servira de référence pour comprendre ses attentes, son positionnement, ses préférences graphiques et ses objectifs.
+Ce questionnaire devra être pris en compte avant de finaliser la direction artistique.
+Ne considère pas les choix graphiques proposés initialement comme définitifs.
+PARTIE A – REFONTE GRAPHIQUE DU SITE WEB
+3. Direction artistique et inspirations
+Je souhaite une véritable refonte graphique, et non une simple modernisation superficielle du site actuel.
+Référence graphique principale :
+https://www.scoutmotors.com/?ref=lapaninja
+Cette référence doit servir d'inspiration pour :
+
+La qualité du design.
+Les grandes images immersives.
+Les sections visuellement fortes.
+Les animations élégantes.
+La hiérarchie typographique.
+Les transitions fluides.
+Les espaces et la composition.
+La qualité de l'expérience utilisateur.
+Le rendu premium et professionnel.
+Il ne faut pas copier ce site, mais s'inspirer de son niveau de finition graphique.
+Je pourrai également fournir d'autres landing pages de référence.
+Important : le site doit conserver une identité adaptée à B-TRAVEL, une entreprise familiale de transport en autocar. Il doit inspirer confiance, proximité, professionnalisme et fiabilité.
+Le design doit rester accessible à une clientèle variée : enseignants, écoles, associations, entreprises, organisateurs d'événements et particuliers.
+4. Expérience utilisateur et conversion
+Le site doit permettre aux visiteurs de comprendre rapidement les services proposés et de demander facilement un devis.
+Les objectifs principaux sont :
+
+Présenter clairement B-TRAVEL et son expérience.
+Valoriser les autocars et les services de transport.
+Rassurer les visiteurs.
+Générer des demandes de devis qualifiées.
+Faciliter les prises de contact.
+Présenter les voyages et excursions organisés.
+Prévoir des appels à l'action visibles et cohérents :
+
+Demander un devis
+Organiser un transport
+Découvrir nos autocars
+Découvrir nos voyages
+Nous contacter
+Le parcours de demande de devis doit être particulièrement simple.
+5. Structure proposée du site public
+Proposer une arborescence comprenant notamment :
+Accueil
+Une page immersive avec un grand visuel d'autocar, une proposition de valeur claire, les services principaux, les points forts de B-TRAVEL et un appel à l'action vers le devis.
+Nos services
+Présenter les différents types de transports : scolaires, groupes, entreprises, événements, excursions et voyages.
+Notre flotte
+Présenter les véhicules, leurs capacités, leurs équipements et leurs photos.
+Voyages et excursions
+Afficher les voyages proposés par B-TRAVEL, avec leurs dates, destinations, programmes, tarifs et disponibilités lorsque ces informations sont fournies.
+À propos
+Présenter l'histoire familiale de B-TRAVEL, ses plus de 40 années d'expérience et ses valeurs.
+Demander un devis
+Créer un formulaire ergonomique permettant de recueillir les informations essentielles d'un projet de transport.
+Contact
+Coordonnées, formulaire et informations pratiques.
+L'arborescence définitive devra être ajustée après analyse du site actuel et du questionnaire client.
+6. Formulaire de demande de devis
+Créer un formulaire connecté directement à l'espace d'administration.
+Champs proposés :
+
+Nom et prénom.
+Société, école ou association.
+Adresse e-mail.
+Téléphone.
+Type de transport.
+Date de départ.
+Date de retour, si nécessaire.
+Lieu de départ.
+Destination.
+Nombre de passagers.
+Horaires souhaités.
+Informations complémentaires.
+Après soumission :
+
+Enregistrer la demande dans la base de données.
+La faire apparaître dans l'administration.
+Afficher une confirmation au visiteur.
+Prévoir une notification à l'administratrice.
+Le formulaire doit être adapté aux mobiles et facile à compléter.
+7. Animations et responsive
+Créer des animations modernes, mais maîtrisées.
+Privilégier :
+
+Apparitions progressives au défilement.
+Transitions douces.
+Effets de survol.
+Sections immersives.
+Micro-interactions discrètes.
+Éviter les animations excessives ou ralentissant le chargement.
+Le site doit être entièrement responsive, performant, accessible et optimisé pour le référencement naturel.
+Conserver les URL pertinentes ou prévoir les redirections nécessaires lors de la migration.
+PARTIE B – ADMINISTRATION B-TRAVEL
+8. Objectif de l'administration
+Il s'agit d'un élément essentiel du projet.
+La cliente doit disposer d'un espace d'administration privé, accessible via une connexion par e-mail et mot de passe.
+Cet espace doit lui permettre de gérer facilement son activité quotidienne.
+Contrainte majeure :
+La cliente est une personne âgée, peu habituée aux logiciels de gestion. Jusqu'à présent, une grande partie de son travail était effectuée sur papier.
+L'administration doit donc être extrêmement simple, intuitive et rassurante.
+Il ne faut surtout pas créer un ERP complexe.
+L'objectif est de remplacer progressivement les agendas papier, les classeurs et les documents par un outil numérique centralisé.
+9. Authentification et sécurité
+Créer une page de connexion à l'administration avec :
+
+Adresse e-mail.
+Mot de passe.
+Fonction de réinitialisation du mot de passe.
+Gestion sécurisée des sessions.
+Déconnexion.
+Protection des pages privées.
+Ne jamais stocker les mots de passe en clair.
+Prévoir la possibilité d'ajouter d'autres utilisateurs à l'avenir, avec des droits d'accès adaptés.
+L'administration doit être inaccessible aux visiteurs du site public.
+10. Les 15 fonctionnalités métier essentielles
+Développer les fonctionnalités suivantes, en privilégiant la simplicité.
+1. Tableau de bord
+Afficher les nouvelles demandes, les devis à traiter, les prochains transports, les rappels et les factures en attente.
+Prévoir des boutons rapides pour créer une demande, un devis ou un transport.
+2. Gestion des demandes
+Centraliser toutes les demandes provenant du site web ou ajoutées manuellement après un appel téléphonique.
+Chaque demande doit disposer d'un statut et pouvoir être consultée ou modifiée facilement.
+3. Création et gestion des devis
+Créer des devis à partir des demandes existantes, sans double encodage.
+Permettre de saisir les prestations, les montants, les conditions et de générer un PDF professionnel.
+Prévoir l'envoi par e-mail et le suivi des devis acceptés, refusés ou en attente.
+4. Planning des transports
+Créer un calendrier visuel affichant les transports par jour, semaine et mois.
+Afficher les horaires, destinations, clients, véhicules, chauffeurs et statuts.
+5. Gestion des clients
+Créer un répertoire regroupant les coordonnées et l'historique des clients.
+Permettre de retrouver facilement les demandes, devis, transports et factures associés à chaque client.
+6. Gestion des réservations
+Transformer automatiquement un devis accepté en réservation confirmée.
+Réutiliser toutes les informations déjà encodées.
+7. Gestion des véhicules
+Répertorier les autocars avec leurs capacités, équipements, immatriculations et disponibilités.
+Détecter les conflits de réservation et les capacités insuffisantes.
+8. Gestion des chauffeurs
+Créer des fiches chauffeurs avec leurs coordonnées, disponibilités et transports attribués.
+Afficher les éventuels conflits de planning.
+9. Fiches de mission
+Générer automatiquement une fiche de mission imprimable pour chaque transport.
+Elle doit reprendre les horaires, lieux de départ, destinations, coordonnées, véhicule, chauffeur et consignes particulières.
+10. Facturation
+Préparer les factures depuis les réservations.
+Gérer les acomptes, les montants, les paiements et les factures en attente.
+Prévoir une numérotation cohérente, l'export et une future intégration comptable.
+Les règles fiscales et les obligations belges de facturation électronique devront être validées avant la mise en production.
+11. Rappels et tâches
+Afficher les devis à relancer, clients à rappeler, transports à préparer et factures à vérifier.
+Permettre de marquer facilement une tâche comme terminée.
+12. Gestion des voyages organisés
+Créer et modifier les excursions et voyages proposés par B-TRAVEL.
+Gérer les destinations, dates, descriptions, tarifs, programmes et capacités.
+Les voyages publiés doivent pouvoir apparaître automatiquement sur le site public.
+13. Gestion des inscriptions
+Enregistrer les participants aux voyages organisés.
+Suivre les inscriptions, places restantes et paiements.
+Permettre d'imprimer les listes de participants.
+14. Gestion des documents
+Centraliser les devis, factures, contrats, fiches de mission et documents associés aux clients, véhicules et réservations.
+Prévoir le téléchargement et l'impression.
+15. Statistiques simples
+Afficher :
+
+Nombre de demandes.
+Nombre de devis envoyés.
+Nombre de devis acceptés.
+Nombre de transports réalisés.
+Chiffre d'affaires enregistré.
+Répartition des demandes par activité.
+Ne pas créer de reporting complexe.
+11. Navigation de l'administration
+Regrouper les fonctionnalités dans un nombre limité de rubriques :
+
+Accueil
+Demandes et devis
+Planning des trajets
+Clients
+Facturation
+Voyages organisés
+Ajouter une section secondaire « Paramètres » regroupant notamment les véhicules, chauffeurs, utilisateurs et configurations.
+Prévoir également la gestion des contenus du site public lorsque cela est nécessaire, notamment les voyages, les photos et les textes.
+12. Parcours métier principal
+Le parcours doit être le suivant :
+Demande reçue → Devis créé → Devis accepté → Réservation confirmée → Chauffeur et véhicule attribués → Fiche de mission → Facturation.
+Chaque étape doit réutiliser les données précédentes.
+L'utilisatrice ne doit pas devoir réencoder plusieurs fois les mêmes informations.
+13. Ergonomie de l'administration
+L'administration doit être conçue pour une personne peu habituée à l'informatique.
+Consignes impératives :
+
+Gros boutons et textes lisibles.
+Interface en français.
+Navigation simple.
+Peu de champs obligatoires.
+Formulaires bien organisés.
+Boutons « Enregistrer », « Modifier », « Imprimer » et « Retour » clairement visibles.
+Messages de confirmation.
+Recherche rapide.
+Aucune suppression sans confirmation.
+Possibilité d'imprimer les principaux documents.
+Aucun jargon technique inutile.
+Le design de l'administration doit être moderne, mais la facilité d'utilisation passe avant les effets graphiques.
+PARTIE C – ARCHITECTURE ET DÉVELOPPEMENT
+14. Connexion entre le site et l'administration
+Le site public et l'administration doivent partager une base de données cohérente.
+Exemples :
+
+Une demande de devis envoyée sur le site apparaît dans l'administration.
+Un voyage créé et publié dans l'administration apparaît sur le site public.
+Une modification des disponibilités d'un voyage se répercute sur le site.
+Les informations clients et réservations restent accessibles uniquement aux utilisateurs autorisés.
+Prévoir une séparation claire entre les données publiques et privées.
+15. Exigences techniques
+
+Analyser et réutiliser la stack existante si elle convient.
+Utiliser une base de données persistante.
+Sécuriser l'authentification et les données.
+Respecter les principes du RGPD.
+Prévoir des sauvegardes et des exports.
+Optimiser les performances et le SEO.
+Assurer le responsive.
+Prévoir une architecture évolutive.
+Ne pas utiliser de fausses données en production.
+Ne pas mettre en place de boutons fictifs.
+Tester les formulaires et les parcours métier complets.
+Prévoir une gestion fiable des erreurs.
+Méthode de travail attendue
+Je souhaite que tu travailles en plusieurs phases.
+Phase 1 – Analyse
+Analyse le site existant, son contenu, son architecture et les ressources disponibles.
+Étudie également les inspirations graphiques transmises.
+Attends le questionnaire client avant de figer la direction artistique.
+Phase 2 – Proposition graphique
+Propose une nouvelle direction artistique, une arborescence et les principaux composants du site.
+Phase 3 – Refonte du site public
+Développe les pages publiques avec un design immersif, moderne et cohérent.
+Phase 4 – Administration
+Développe la connexion sécurisée, le tableau de bord, les demandes, les devis, les clients et le planning.
+Phase 5 – Fonctionnalités complémentaires
+Ajoute progressivement les chauffeurs, véhicules, fiches de mission, facturation, voyages, inscriptions, documents et statistiques.
+Phase 6 – Tests
+Vérifie les parcours utilisateurs, la sauvegarde des données, les permissions, les formulaires, les exports et le responsive.
+Résultat attendu
+Je souhaite obtenir deux interfaces complémentaires :
+Un site public premium, capable de valoriser l'image de B-TRAVEL et de générer des demandes de devis.
+Une administration très simple, permettant à la cliente de gérer son entreprise sans devoir maîtriser un logiciel complexe.
+Le site doit être visuellement ambitieux, tandis que l'administration doit être avant tout pratique, lisible et facile à utiliser.
+La cliente doit pouvoir retrouver un client, créer un devis, consulter son planning, organiser un transport et imprimer ses documents en quelques clics.
+Commence par analyser le projet et les références. Présente-moi ton plan de développement et les décisions qui nécessitent ma validation avant de modifier l'existant. Le questionnaire client et d'autres références graphiques seront transmis ensuite.
