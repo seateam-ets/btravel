@@ -26,3 +26,9 @@ L’architecture, la structure du site public et l’organisation de l’adminis
 **Why:** L’utilisateur a validé séparément ces trois sections de conception.
 
 **How to apply:** Les reprendre telles quelles dans la spécification ; garder la direction visuelle provisoire jusqu’au questionnaire cliente.
+
+Le domaine final de production n’est pas encore décidé.
+
+**Why:** L’utilisateur a choisi de trancher ce point plus tard.
+
+**How to apply:** Ne pas supposer que le site passera sur `b-travel.be` et ne pas préparer de bascule ou de redirections de production sans validation ultérieure.
