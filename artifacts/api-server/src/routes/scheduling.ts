@@ -351,7 +351,9 @@ router.post("/schedule/conflicts", async (req, res): Promise<void> => {
 });
 
 router.get("/schedule/occurrences", async (req, res): Promise<void> => {
-  const parsed = api.ListScheduleOccurrencesQueryParams.safeParse(req.query);
+  // Les paramètres d'URL sont du texte : on les convertit avant la validation qui attend des dates.
+  const asDate = (value: unknown) => (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) ? new Date(`${value}T00:00:00Z`) : value);
+  const parsed = api.ListScheduleOccurrencesQueryParams.safeParse({ from: asDate(req.query.from), to: asDate(req.query.to) });
   if (!parsed.success) {
     res.status(400).json({ error: "Période de planning invalide." });
     return;

@@ -12,6 +12,11 @@ import {
 import { randomUUID } from "node:crypto";
 import { recordActivity } from "../lib/activity";
 
+// Les dates validées par Zod arrivent en objets Date : String(date) donnerait « Wed Nov… ».
+function toDay(value: string | Date): string {
+  return value instanceof Date ? value.toISOString().slice(0, 10) : String(value).slice(0, 10);
+}
+
 const router: IRouter = Router();
 
 function makeReference(prefix: string, id: string): string {
@@ -325,7 +330,7 @@ router.post("/quotes", async (req, res): Promise<void> => {
         requestId: request.id,
         totalCents: parsed.data.totalCents,
         validUntil: parsed.data.validUntil
-          ? String(parsed.data.validUntil).slice(0, 10)
+          ? toDay(parsed.data.validUntil)
           : null,
         notes: parsed.data.notes?.trim() || null,
       })

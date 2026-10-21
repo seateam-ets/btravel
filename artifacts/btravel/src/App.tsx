@@ -206,21 +206,29 @@ function SignInPage(){
  const {ref,failed}=useClerkErrorWatcher();
  return <main className="sign-in-placeholder"><Brand/><div className="sign-in-card"><div className="eyebrow">ESPACE B-TRAVEL</div><h1>Administration</h1><p>Connectez-vous avec votre adresse e-mail et votre mot de passe.</p>
   {failed&&<div className="signin-help signin-help-alert" role="alert"><CircleAlert size={18}/><div><strong>La connexion n’a pas abouti.</strong><span>Si c’est votre première visite, vous devez d’abord créer votre compte avec l’adresse e-mail autorisée.</span><Link href="/sign-up" className="button button-orange">Créer mon compte</Link></div></div>}
-  <div ref={ref}><SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} forceRedirectUrl={`${basePath}/admin`} appearance={clerkAppearance}/></div>
+  <div ref={ref}><SignIn routing="hash" signUpUrl={`${basePath}/sign-up`} forceRedirectUrl={`${basePath}/admin`} appearance={clerkAppearance}/></div>
   <div className="signin-help"><div><strong>Pas encore de compte ?</strong><span>Créez votre accès en deux minutes avec l’adresse e-mail autorisée par B-TRAVEL.</span><Link href="/sign-up" className="button button-outline">Créer mon compte</Link></div></div>
   <Link href="/" className="text-link">← Retour au site public</Link></div></main>;
 }
 function AccessProblem({status}:{status:number}){
  const {signOut}=useClerk(); const {user}=useUser();
- if(status===401)return <div className="error-panel"><CircleAlert/><div><b>Votre session a expiré.</b><p>Reconnectez-vous pour continuer. Si vous n’avez pas encore de compte, créez-le d’abord.</p><div className="access-actions"><Link href="/sign-in" className="button button-orange">Me reconnecter</Link><Link href="/sign-up" className="button button-outline">Créer mon compte</Link></div></div></div>;
- return <div className="error-panel"><CircleAlert/><div><b>Ce compte n’a pas accès à l’administration.</b><p>Vous êtes connectée avec <strong>{user?.primaryEmailAddress?.emailAddress??'une adresse non autorisée'}</strong>. Seules les adresses autorisées par B-TRAVEL peuvent entrer. Déconnectez-vous puis créez votre compte ou connectez-vous avec la bonne adresse e-mail.</p><div className="access-actions"><button className="button button-orange" onClick={()=>signOut({redirectUrl:`${basePath}/sign-up`})}>Créer un compte avec une autre adresse</button><button className="button button-outline" onClick={()=>signOut({redirectUrl:`${basePath}/sign-in`})}>Changer de compte</button></div></div></div>;
+ if(status===401)return <div className="error-panel"><CircleAlert/><div><b>Votre session a expiré.</b><p>Reconnectez-vous pour continuer. Si vous n’avez pas encore de compte, créez-le d’abord.</p><div className="access-actions"><Link href="/admin" className="button button-orange">Me reconnecter</Link><Link href="/sign-up" className="button button-outline">Créer mon compte</Link></div></div></div>;
+ return <div className="error-panel"><CircleAlert/><div><b>Ce compte n’a pas accès à l’administration.</b><p>Vous êtes connectée avec <strong>{user?.primaryEmailAddress?.emailAddress??'une adresse non autorisée'}</strong>. Seules les adresses autorisées par B-TRAVEL peuvent entrer. Déconnectez-vous puis créez votre compte ou connectez-vous avec la bonne adresse e-mail.</p><div className="access-actions"><button className="button button-orange" onClick={()=>signOut({redirectUrl:`${basePath}/sign-up`})}>Créer un compte avec une autre adresse</button><button className="button button-outline" onClick={()=>signOut({redirectUrl:`${basePath}/admin`})}>Changer de compte</button></div></div></div>;
 }
 const errorStatus=(error:unknown)=>typeof error==='object'&&error!==null&&'status' in error?Number((error as {status:unknown}).status):0;
-function SignUpPage(){return <main className="sign-in-placeholder"><Brand/><div className="sign-in-card"><div className="eyebrow">ESPACE B-TRAVEL</div><h1>Première connexion</h1><p>Créez votre accès avec l’adresse e-mail autorisée par B-TRAVEL. Les autres adresses n’ont pas accès à l’administration.</p><SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} forceRedirectUrl={`${basePath}/admin`} appearance={clerkAppearance}/><Link href="/sign-in" className="text-link">J’ai déjà un accès, me connecter</Link></div></main>}
+function SignUpPage(){return <main className="sign-in-placeholder"><Brand/><div className="sign-in-card"><div className="eyebrow">ESPACE B-TRAVEL</div><h1>Première connexion</h1><p>Créez votre accès avec l’adresse e-mail autorisée par B-TRAVEL. Les autres adresses n’ont pas accès à l’administration.</p><SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/admin`} forceRedirectUrl={`${basePath}/admin`} appearance={clerkAppearance}/><Link href="/admin" className="text-link">J’ai déjà un accès, me connecter</Link></div></main>}
 function RequireAdmin({children}:{children:ReactNode}){
- const {isLoaded,isSignedIn}=useAuth();
+ const {isLoaded,isSignedIn}=useAuth(); const [path]=useLocation();
  if(!isLoaded)return <main className="sign-in-placeholder"><div className="loading-panel"/></main>;
- if(!isSignedIn)return <Redirect to="/sign-in"/>;
+ if(!isSignedIn)return path==='/admin'?<SignInPage/>:<Redirect to="/admin"/>;
+ return <AccessGate>{children}</AccessGate>;
+}
+// Vérifie une seule fois que le compte connecté est bien autorisé avant d'afficher une page admin.
+function AccessGate({children}:{children:ReactNode}){
+ const q=useGetDashboard();
+ const status=q.isError?errorStatus(q.error):0;
+ if(q.isLoading)return <main className="sign-in-placeholder"><div className="loading-panel"/></main>;
+ if(status===401||status===403)return <main className="sign-in-placeholder"><Brand/><div className="sign-in-card"><AccessProblem status={status}/></div></main>;
  return <>{children}</>;
 }
 function ClerkQueryClientCacheInvalidator(){
@@ -230,7 +238,7 @@ function ClerkQueryClientCacheInvalidator(){
 }
 function ClerkRouter(){
  const [,setLocation]=useLocation();
- return <ClerkProvider publishableKey={clerkPubKey} proxyUrl={clerkProxyUrl} appearance={clerkAppearance} signInUrl={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} localization={frFR} routerPush={to=>setLocation(stripBase(to))} routerReplace={to=>setLocation(stripBase(to),{replace:true})}><ClerkQueryClientCacheInvalidator/><Router/></ClerkProvider>;
+ return <ClerkProvider publishableKey={clerkPubKey} proxyUrl={clerkProxyUrl} appearance={clerkAppearance} signInUrl={`${basePath}/admin`} signUpUrl={`${basePath}/sign-up`} localization={frFR} routerPush={to=>setLocation(stripBase(to))} routerReplace={to=>setLocation(stripBase(to),{replace:true})}><ClerkQueryClientCacheInvalidator/><Router/></ClerkProvider>;
 }
 function Router(){
  const [location]=useLocation();
@@ -255,7 +263,7 @@ function Router(){
   <Route path="/demande-de-transport" component={TransportRequest}/><Route path="/contact" component={Contact}/>
   <Route path="/admin"><RequireAdmin><Dashboard/></RequireAdmin></Route>
   {Object.entries(modules).map(([path,module])=><Route key={path} path={path}><RequireAdmin><AdminModulePage path={path} {...module} Shell={AdminShell}/></RequireAdmin></Route>)}
-  <Route path="/sign-in/*?" component={SignInPage}/><Route path="/sign-up/*?" component={SignUpPage}/><Route component={NotFound}/>
+  <Route path="/sign-in/*?"><Redirect to="/admin" replace/></Route><Route path="/sign-up/*?" component={SignUpPage}/><Route component={NotFound}/>
  </Switch></RoutedErrorBoundary>;
 }
 function RoutedErrorBoundary({children}:{children:ReactNode}){const [location]=useLocation();return <ErrorBoundary resetKey={location}>{children}</ErrorBoundary>}

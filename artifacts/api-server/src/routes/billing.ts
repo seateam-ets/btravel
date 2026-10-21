@@ -13,6 +13,11 @@ import {
 import { randomUUID } from "node:crypto";
 import { recordActivity } from "../lib/activity";
 
+// Les dates validées par Zod arrivent en objets Date : String(date) donnerait « Wed Nov… ».
+function toDay(value: string | Date): string {
+  return value instanceof Date ? value.toISOString().slice(0, 10) : String(value).slice(0, 10);
+}
+
 const router: IRouter = Router();
 
 function asIso(value: string | Date | undefined): string | undefined {
@@ -82,7 +87,7 @@ router.post("/invoices", async (req, res): Promise<void> => {
         clientName,
         transportId: input.transportId ?? null,
         totalCents: input.totalCents,
-        dueDate: input.dueDate ? String(input.dueDate).slice(0, 10) : null,
+        dueDate: input.dueDate ? toDay(input.dueDate) : null,
         status: "draft",
       })
       .returning();

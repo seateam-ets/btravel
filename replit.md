@@ -42,8 +42,9 @@ _Populate as you build — sharp edges, "always run X before Y" rules._
 
 ## Accès à l’administration
 
-- Adresse : `/admin` (ou lien « Administration » en pied de page). Connexion : `/sign-in`, première connexion : `/sign-up`.
+- Adresse : `/admin` (ou lien « Administration » en pied de page). Le formulaire de connexion s’affiche directement sur `/admin` (`/sign-in` y redirige) ; première connexion : `/sign-up`.
 - Secret Replit requis : `ADMIN_EMAILS` (adresses autorisées, séparées par des virgules). Au premier accès, un compte Clerk dont l’adresse e-mail vérifiée figure dans cette liste est enregistré comme responsable (`btravel_staff_users`). Toute autre adresse reçoit un refus (403).
+- Au démarrage, l’API crée les 13 autocars de la flotte si la table des véhicules est vide (immatriculation « À compléter », capacité indicative à corriger dans Véhicules).
 - Les demandes envoyées via le formulaire public (accueil, `/demande-de-transport`, `/contact`) apparaissent dans Admin → Demandes de devis (statut « Nouvelle », bouton « Voir la demande »).
 
 ## Pointers
