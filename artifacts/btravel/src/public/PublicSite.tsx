@@ -115,7 +115,7 @@ function PublicNav() {
       <Link href="/" className="sc-nav2-logo" aria-label="B-TRAVEL, accueil" onClick={close}><img src="/btravel-logo.png" alt="B-TRAVEL" /></Link>
       <nav className="sc-nav2-links" aria-label="Navigation principale">{navLinks.map(([h, l]) => <a key={h} href={h} onClick={close} className={isActive(h) ? 'is-active' : ''}>{l}</a>)}</nav>
       <div className="sc-nav2-actions">
-        <a href={PHONE_HREF} className="sc-nav2-phone"><Phone size={15} /><span>{A.phone}</span></a>
+        <a href={PHONE_HREF} className="sc-nav2-phone" aria-label={`Appeler le ${A.phone}`} title={A.phone}><Phone size={16} /><span>{A.phone}</span></a>
         <Link href="/demande-de-transport" className="sc-nav2-cta" onClick={close}>Demander un devis</Link>
         <button className="sc-nav2-burger" aria-label={open ? 'Fermer le menu' : 'Ouvrir le menu'} aria-expanded={open} onClick={() => setOpen(v => !v)}><span /><span /></button>
       </div>
