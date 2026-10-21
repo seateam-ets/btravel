@@ -269,5 +269,9 @@
       "priceLabel": "24 € par personne",
       "legacySlug": "village-de-noel-a-liege-14-decembre"
     }
-  ]
+  ],
+  "teamImage": "/media/equipe-b-travel.webp",
+  "depotImage": "/media/depot-perwez.webp",
+  "fleetImage": "/media/flotte-trois-autocars.webp",
+  "detailImage": "/media/phare-autocar.webp"
 }
