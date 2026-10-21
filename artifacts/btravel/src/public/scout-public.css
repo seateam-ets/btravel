@@ -695,3 +695,62 @@
 @media (max-width: 960px) { .sc-nav2-overlay { height:calc(100dvh - 64px); } }
 .sc-hero3-copy h1 { font-size:clamp(32px,3.6vw,52px); letter-spacing:-.03em; line-height:1.08; margin:0 0 16px; max-width:720px; }
 .sc-hero3-copy p { font-size:clamp(15px,1.15vw,17px); margin-bottom:24px; max-width:520px; }
+
+/* ===== Audit UX site public ===== */
+/* textes : 13-14px minimum */
+.sc-mono,.sc-chip,.sc-kicker { font-size:14px; }
+.sc-bookbar-field span { font-size:13px; }
+.sc-card-foot,.sc-card-foot small,.sc-arch .sc-mono,.sc-card-body .sc-mono,.sc-chooser-note,.sc-heritage-track figcaption,.qf-small,.sc-express-phone,.sc-review small { font-size:14px; }
+.sc-chooser-tabs em { font-size:13px; }
+.sc-nav2-links a { min-height:44px; display:inline-flex; align-items:center; }
+.sc-footer-links a,.sc-footer p a { display:inline-block; padding:6px 0; }
+
+/* en-tête de page clair (pages sans photo) */
+.sc-pagehero-light { background:#f2f2f2; padding:clamp(120px,14vw,170px) max(20px,calc((100% - 1440px)/2 + 32px)) clamp(48px,6vw,80px); display:grid; grid-template-columns:1.2fr .8fr; gap:40px; align-items:end; overflow:hidden; }
+.sc-pagehero-light-copy .sc-mono { color:#616161; }
+.sc-pagehero-light h1 { font-size:clamp(40px,5vw,72px); font-weight:500; letter-spacing:-.04em; line-height:1.04; margin:14px 0 18px; }
+.sc-pagehero-light p { font-size:18px; color:#616161; max-width:620px; line-height:1.55; }
+.sc-pagehero-cutout { width:100%; max-width:560px; justify-self:end; mix-blend-mode:multiply; }
+.sc-pagehero-chips { list-style:none; display:flex; flex-wrap:wrap; gap:8px; padding:0; margin:20px 0 0; }
+.sc-pagehero-chips li { background:#fff; border:1px solid #e5e7eb; border-radius:99px; padding:7px 14px; font-size:14px; font-weight:500; }
+.sc-pagehero-chips-dark li { background:rgba(255,255,255,.14); border-color:rgba(255,255,255,.3); color:#fff; backdrop-filter:blur(8px); }
+.sc-pagehero .sc-hero-rule { display:none; }
+
+/* réassurance : chiffres clés */
+.sc-why { grid-template-columns:1fr; }
+.sc-why>div:first-child { max-width:760px; }
+.sc-why ul:not(.sc-why-stats) { grid-template-columns:repeat(4,1fr); }
+.sc-why-stats { margin:0; max-width:none; border-top:1px solid #e5e7eb; text-align:left; }
+
+/* monogramme : le mot ne se coupe jamais */
+.sc-monogram .sc-kicker { justify-content:center; }
+.sc-monogram-word { white-space:nowrap; font-size:clamp(56px,19vw,300px); }
+.sc-monogram + .sc-fleetzone { padding-top:0; }
+
+/* voyages */
+.sc-archive-more { margin-top:32px; }
+.sc-card-img img { aspect-ratio:4/3; }
+
+@media (max-width: 960px) {
+  .sc-why ul:not(.sc-why-stats) { grid-template-columns:1fr 1fr; }
+  .sc-pagehero-light { grid-template-columns:1fr; padding-top:110px; }
+  .sc-pagehero-cutout { justify-self:center; max-width:420px; }
+}
+@media (max-width: 640px) {
+  /* services : grille compacte sur 2 colonnes */
+  .sc-services { grid-template-columns:1fr 1fr; gap:10px; }
+  .sc-service { padding:18px; gap:8px; border-radius:16px; }
+  .sc-service h3 { font-size:17px; }
+  .sc-service p { display:none; }
+  .sc-service .sc-textlink { font-size:13px; }
+  .sc-service-icon { width:40px; height:40px; }
+  .sc-why ul:not(.sc-why-stats) { grid-template-columns:1fr; gap:22px; }
+  .sc-why-stats { grid-template-columns:1fr 1fr; }
+  .sc-heritage-track figure { flex-basis:78vw; }
+  .sc-review-row { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; gap:12px; padding-bottom:8px; }
+  .sc-review { flex:0 0 82%; scroll-snap-align:start; min-height:0; }
+  .sc-partner-row { grid-template-columns:1fr; }
+  .sc-head { margin-bottom:28px; }
+}
+.sc-why .sc-why-stats { grid-template-columns:repeat(4,1fr); }
+@media (max-width: 640px) { .sc-why .sc-why-stats { grid-template-columns:1fr 1fr; } }

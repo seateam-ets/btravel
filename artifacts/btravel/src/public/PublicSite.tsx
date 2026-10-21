@@ -141,16 +141,28 @@ function Footer() {
     <div className="sc-footer-bar"><span>© B-TRAVEL</span><span className="sc-mono">Perwez · BE</span><span className="sc-mono">Depuis plus de 40 ans</span></div>
   </footer>;
 }
-function PublicLayout({ children }: { children: ReactNode }) {
+const SITE = 'B-TRAVEL';
+function usePageMeta(title?: string, description?: string) {
+  useEffect(() => {
+    document.title = title ? `${title} · ${SITE}` : `${SITE} · Autocars avec chauffeur à Perwez, Brabant wallon`;
+    if (description) document.querySelector('meta[name="description"]')?.setAttribute('content', description);
+  }, [title, description]);
+}
+function PublicLayout({ children, title, description }: { children: ReactNode; title?: string; description?: string }) {
+  usePageMeta(title, description);
   useReveal();
   return <div className="public-site sc-site"><PublicNav />{children}<Footer /></div>;
 }
-function PageHero({ image, kicker, title, meta, children }: { image: string; kicker: string; title: ReactNode; meta?: string[]; children?: ReactNode }) {
+function PageHero({ image, kicker, title, meta, children, cutout }: { image?: string; kicker: string; title: ReactNode; meta?: string[]; children?: ReactNode; cutout?: string }) {
+  if (!image) return <section className="sc-pagehero-light">
+    <div className="sc-pagehero-light-copy"><span className="sc-mono">{kicker}</span><h1>{title}</h1>{children}
+      {meta && <ul className="sc-pagehero-chips">{meta.map(m => <li key={m}>{m}</li>)}</ul>}</div>
+    {cutout && <img src={cutout} alt="" className="sc-pagehero-cutout" />}
+  </section>;
   return <section className="sc-pagehero">
     <img src={image} alt="" className="sc-hero-img" />
     <div className="sc-hero-shade" />
-    <div className="sc-pagehero-copy"><span className="sc-mono">{kicker}</span><h1>{title}</h1>{children}</div>
-    {meta && <div className="sc-hero-rule"><span />{meta.map(m => <span key={m} className="sc-mono">{m}</span>)}</div>}
+    <div className="sc-pagehero-copy"><span className="sc-mono">{kicker}</span><h1>{title}</h1>{children}{meta && <ul className="sc-pagehero-chips sc-pagehero-chips-dark">{meta.map(m => <li key={m}>{m}</li>)}</ul>}</div>
   </section>;
 }
 function Kicker({ n, children }: { n: string; children: ReactNode }) { return <div className="sc-kicker"><span>{n}</span><i />{children}</div>; }
@@ -161,7 +173,7 @@ function TripCards({ trips, loading, error, retry, limit = 3 }: { trips: PublicT
   if (error) return <div className="sc-state"><CircleAlert /><span>Les voyages ne sont pas disponibles pour le moment.</span><button className="sc-textlink" onClick={retry}>Réessayer <RefreshCw size={15} /></button></div>;
   if (!trips.length) return null;
   return <div className="sc-cards">{trips.slice(0, limit).map((trip, i) => <Link href={`/voyages/${trip.id}`} className="sc-card rv" key={trip.id} data-testid={`card-trip-${trip.id}`}>
-    <div className="sc-card-img">{trip.imageUrl ? <img src={trip.imageUrl} alt="" loading="lazy" /> : <div className="sc-card-blank"><MapPin /></div>}<span className="sc-chip">{String(i + 1).padStart(2, '0')} · Départ</span></div>
+    <div className="sc-card-img"><img src={trip.imageUrl || content.heroImage} alt="" loading="lazy" /><span className="sc-chip">{String(i + 1).padStart(2, '0')} · Départ</span></div>
     <div className="sc-card-body"><span className="sc-mono">{date(trip.startDate)} au {date(trip.endDate)}</span><h3>{trip.title}</h3><div className="sc-card-foot"><span>{trip.destination} · {trip.remainingSeats} places restantes</span><b>{money(trip.priceCents)}<small> / pers.</small></b></div></div>
   </Link>)}</div>;
 }
@@ -177,11 +189,15 @@ function AnnouncementCard() {
     </div>
   </Link>;
 }
+const cleanTitle = (t: string) => t.replace(/^(COMPLET|NOUVELLE DATE)\s*!\s*/i, '').trim();
 function ArchiveGrid() {
-  return <div className="sc-archive">{pastEvents.map((e, i) => <Link key={e.slug} href={`/voyages/archives/${e.slug}`} className="sc-arch rv" style={{ transitionDelay: `${(i % 3) * 70}ms` }}>
+  const [all, setAll] = useState(false);
+  const shown = all ? pastEvents : pastEvents.slice(0, 3);
+  return <><div className="sc-archive">{shown.map((e, i) => <Link key={e.slug} href={`/voyages/archives/${e.slug}`} className="sc-arch rv" style={{ transitionDelay: `${(i % 3) * 70}ms` }}>
     <div className="sc-arch-img"><img src={e.image} alt="" loading="lazy" /><span className="sc-chip">Voyage passé</span></div>
-    <span className="sc-mono">{longDate(e.date)} · {e.priceLabel}</span><h3>{e.title}</h3><span className="sc-textlink">Lire l’archive <ArrowUpRight size={14} /></span>
-  </Link>)}</div>;
+    <span className="sc-mono">{longDate(e.date)} · {e.priceLabel}</span><h3>{cleanTitle(e.title)}</h3><span className="sc-textlink">Lire l’archive <ArrowUpRight size={14} /></span>
+  </Link>)}</div>
+  {pastEvents.length > 3 && <button className="sc-btn sc-btn-outline sc-archive-more" onClick={() => setAll(v => !v)} aria-expanded={all}>{all ? 'Afficher moins' : `Voir les ${pastEvents.length} voyages passés`}</button>}</>;
 }
 
 /* ---------- Home ---------- */
@@ -271,15 +287,15 @@ export function Home() {
       <div className="sc-hero3-bottom sc-fade" style={{ animationDelay: '.7s' }}><ExpressQuote /></div>
     </section>
 
-    <section className="sc-monogram">
-      <p className="sc-monogram-word rv" aria-hidden="true">B-TRAVEL</p>
-      <img className="sc-monogram-bus rv" src={fleetCategories.find(c => c.id === 'double')?.models[0].image ?? content.fleet[1].image} alt="Autocar double étage Néoplan Skyliner B-TRAVEL" loading="lazy" />
-      <div className="sc-monogram-copy rv">
-        <h2>Du minibus au double étage.</h2>
-        <p>Treize modèles entretenus à Perwez, jusqu’à 83 places, pour emmener chaque groupe en toute sécurité.</p>
-        <div className="sc-monogram-actions"><a href="#flotte" className="sc-btn sc-btn-dark">Choisir mon autocar</a><Link href="/nos-vehicules" className="sc-btn sc-btn-pale">Voir la flotte</Link></div>
-      </div>
-      <ul className="sc-monogram-stats">
+    <section className="sc-why" id="pourquoi">
+      <div><Kicker n="01">Pourquoi B-TRAVEL</Kicker><h2 className="rv">Sécurité et confort, depuis plus de 40 ans.</h2></div>
+      <ul>
+        <li className="rv"><ShieldCheck /><b>Sécurité d’abord</b><span>Véhicules entretenus et équipés des dernières technologies de sécurité ; chauffeurs respectant la réglementation sur les temps de conduite.</span></li>
+        <li className="rv"><Users /><b>Une entreprise familiale</b><span>Un interlocuteur direct qui connaît votre dossier, de la demande de devis au retour du groupe.</span></li>
+        <li className="rv"><BusFront /><b>Une flotte variée</b><span>Du minibus au double étage de 83 places : le véhicule adapté, sans payer de places inutiles.</span></li>
+        <li className="rv"><MapPin /><b>Ancrés en Brabant wallon</b><span>Dépôt à Perwez, départs depuis votre école, votre entreprise ou le lieu de votre choix.</span></li>
+      </ul>
+      <ul className="sc-monogram-stats sc-why-stats">
         <li><strong>40+</strong><span>ans d’expérience</span></li>
         <li><strong>13</strong><span>modèles d’autocars</span></li>
         <li><strong>83</strong><span>places au maximum</span></li>
@@ -287,8 +303,24 @@ export function Home() {
       </ul>
     </section>
 
+    <section className="sc-monogram" id="flotte">
+      <Kicker n="02">Nos autocars</Kicker>
+      <p className="sc-monogram-word rv" aria-hidden="true">B-TRAVEL</p>
+      <img className="sc-monogram-bus rv" src={fleetCategories.find(c => c.id === 'double')?.models[0].image ?? content.fleet[1].image} alt="Autocar double étage Néoplan Skyliner B-TRAVEL" loading="lazy" />
+      <div className="sc-monogram-copy rv">
+        <h2>Du minibus au double étage.</h2>
+        <p>Treize modèles entretenus à Perwez, jusqu’à 83 places, pour emmener chaque groupe en toute sécurité.</p>
+        <div className="sc-monogram-actions"><a href="#choisir" className="sc-btn sc-btn-dark">Choisir mon autocar</a><Link href="/nos-vehicules" className="sc-btn sc-btn-pale">Voir la flotte</Link></div>
+      </div>
+    </section>
+
+    <section className="sc-fleetzone" id="choisir">
+      <div className="sc-head sc-head-light"><div><h2 className="rv">Indiquez la taille de votre groupe, nous vous conseillons le bon véhicule.</h2></div><Link href="/nos-vehicules" className="sc-textlink">Toute la flotte <ArrowRight size={15} /></Link></div>
+      <FleetChooser />
+    </section>
+
     <section className="sc-section" id="services">
-      <div className="sc-head"><div><Kicker n="01">Nos services</Kicker><h2 className="rv">Un autocar pour chaque projet.</h2></div><p className="sc-note">Vous êtes enseignant, responsable d’association ou organisateur d’événement ? Quel que soit le motif de vos déplacements, nous sommes à votre service.</p></div>
+      <div className="sc-head"><div><Kicker n="03">Nos services</Kicker><h2 className="rv">Un autocar pour chaque projet.</h2></div><p className="sc-note">Vous êtes enseignant, responsable d’association ou organisateur d’événement ? Quel que soit le motif de vos déplacements, nous sommes à votre service.</p></div>
       <div className="sc-services">{services.map((sv, i) => {
         const Icon = sv.icon;
         return <Link key={sv.title} href={sv.href ?? `/demande-de-transport?type=${encodeURIComponent(sv.type ?? '')}`} className="sc-service rv" style={{ transitionDelay: `${(i % 3) * 70}ms` }}>
@@ -298,24 +330,9 @@ export function Home() {
       })}</div>
     </section>
 
-    <section className="sc-fleetzone" id="flotte">
-      <div className="sc-head sc-head-light"><div><Kicker n="02">Choisir son autocar</Kicker><h2 className="rv">Indiquez la taille de votre groupe, nous vous conseillons le bon véhicule.</h2></div><Link href="/nos-vehicules" className="sc-textlink">Toute la flotte <ArrowRight size={15} /></Link></div>
-      <FleetChooser />
-    </section>
-
-    <section className="sc-why">
-      <div><Kicker n="03">Pourquoi B-TRAVEL</Kicker><h2 className="rv">Sécurité et confort, depuis plus de 40 ans.</h2></div>
-      <ul>
-        <li className="rv"><ShieldCheck /><b>Sécurité d’abord</b><span>Véhicules entretenus et équipés des dernières technologies de sécurité ; chauffeurs respectant la réglementation sur les temps de conduite.</span></li>
-        <li className="rv"><Users /><b>Une entreprise familiale</b><span>Un interlocuteur direct qui connaît votre dossier, de la demande de devis au retour du groupe.</span></li>
-        <li className="rv"><BusFront /><b>Une flotte variée</b><span>Du minibus au double étage de 83 places : le véhicule adapté, sans payer de places inutiles.</span></li>
-        <li className="rv"><MapPin /><b>Ancrés en Brabant wallon</b><span>Dépôt à Perwez, départs depuis votre école, votre entreprise ou le lieu de votre choix.</span></li>
-      </ul>
-    </section>
-
     <section className="sc-heritage">
       <div className="sc-head"><div><Kicker n="04">Notre histoire</Kicker><h2 className="rv">Plus de 40 ans sur la route.</h2></div><p className="sc-note">Des premiers autocars aux couleurs B-TRAVEL jusqu’aux traversées vers l’étranger : une histoire de famille, de confiance et de kilomètres partagés.</p></div>
-      <div className="sc-heritage-track">{content.historyImages.map((src, i) => <figure key={src} className="rv" style={{ transitionDelay: `${(i % 3) * 70}ms` }}><img src={src} alt={`Archives B-TRAVEL, photographie ${i + 1}`} loading="lazy" /><figcaption>Archives B-TRAVEL · {String(i + 1).padStart(2, '0')}</figcaption></figure>)}</div>
+      <div className="sc-heritage-track" tabIndex={0} role="region" aria-label="Photos d’archives, faire défiler horizontalement">{content.historyImages.map((src, i) => <figure key={src} className="rv" style={{ transitionDelay: `${(i % 3) * 70}ms` }}><img src={src} alt={`Archives B-TRAVEL, photographie ${i + 1}`} loading="lazy" /><figcaption>Archives B-TRAVEL · {String(i + 1).padStart(2, '0')}</figcaption></figure>)}</div>
       <Link href="/a-propos" className="sc-textlink">Découvrir notre histoire <ArrowRight size={15} /></Link>
     </section>
 
@@ -327,7 +344,7 @@ export function Home() {
 
     <section className="sc-section sc-reviews">
       <div className="sc-head"><div><Kicker n="06">Ce qu’ils disent de nous</Kicker><h2 className="rv">« Excellent », sur la base de 16 avis Google.</h2></div></div>
-      <div className="sc-review-row">{reviews.filter(r => !r.text.startsWith('Avis sans')).map((r, i) => <figure key={r.name} className="sc-review rv" style={{ transitionDelay: `${i * 80}ms` }}><div className="sc-stars" aria-label="5 étoiles">{[1, 2, 3, 4, 5].map(n => <Star key={n} size={14} fill="currentColor" />)}</div><blockquote>« {r.text} »</blockquote><figcaption><span className="sc-avatar">{r.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</span><span>{r.name}<small className="sc-mono">{r.date} · Google</small></span></figcaption></figure>)}</div>
+      <div className="sc-review-row" tabIndex={0} role="region" aria-label="Avis clients">{reviews.filter(r => !r.text.startsWith('Avis sans')).map((r, i) => <figure key={r.name} className="sc-review rv" style={{ transitionDelay: `${i * 80}ms` }}><div className="sc-stars" role="img" aria-label="Note : 5 étoiles sur 5">{[1, 2, 3, 4, 5].map(n => <Star key={n} size={14} fill="currentColor" />)}</div><blockquote>« {r.text} »</blockquote><figcaption><span className="sc-avatar">{r.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</span><span>{r.name}<small className="sc-mono">{r.date} · Google</small></span></figcaption></figure>)}</div>
     </section>
 
     <section className="sc-quotezone" id="devis">
@@ -354,7 +371,7 @@ export function TripsPage() {
   const q = useListPublicTrips();
   const list = q.data ?? [];
   const hasApiCologne = list.some(isCologne);
-  return <PublicLayout><main>
+  return <PublicLayout title="Voyages organisés" description="Excursions et voyages organisés au départ de Perwez, Wavre et Bruxelles : marchés de Noël, parcs d’attractions, city trips."><main>
     <PageHero image={upcomingEvent?.image ?? content.heroImage} kicker="Voyages organisés" title="Les voyages à venir." meta={['Perwez · Wavre · Bruxelles', 'Réservation sur demande']}><p>Excursions et circuits organisés en Belgique, France, Pays-Bas et au-delà. Notre équipe confirme chaque inscription manuellement.</p></PageHero>
     <section className="sc-section">
       <div className="sc-head"><div><Kicker n="01">À l’affiche</Kicker><h2>Prochains départs</h2></div></div>
@@ -377,8 +394,8 @@ function EventBody({ md, archive }: { md: string; archive?: boolean }) {
 export function ArchivePage({ slug }: { slug: string }) {
   const ev = pastEvents.find(e => e.slug === slug);
   if (!ev) { if (upcomingEvent?.slug === slug) return <Redirect to={`/voyages/programme/${slug}`} />; return <Redirect to="/voyages" />; }
-  return <PublicLayout><main>
-    <PageHero image={ev.image} kicker="Archive · voyage passé" title={ev.title} meta={[longDate(ev.date), ev.priceLabel, 'Non réservable']} />
+  return <PublicLayout title={cleanTitle(ev.title)}><main>
+    <PageHero image={ev.image} kicker="Archive · voyage passé" title={cleanTitle(ev.title)} meta={[longDate(ev.date), ev.priceLabel, 'Non réservable']} />
     <section className="sc-detail">
       <Link href="/voyages" className="sc-textlink"><ArrowLeft size={15} /> Tous les voyages</Link>
       <div className="sc-detail-grid">
@@ -395,7 +412,7 @@ export function ProgrammePage({ slug }: { slug: string }) {
   const apiTrip = (q.data ?? []).find(isCologne);
   if (apiTrip) return <Redirect to={`/voyages/${apiTrip.id}`} />;
   const subject = encodeURIComponent('Marché de Noël de Cologne, samedi 12 décembre 2026');
-  return <PublicLayout><main>
+  return <PublicLayout title={ev.title}><main>
     <PageHero image={ev.image} kicker="Annonce · voyage organisé" title={ev.title} meta={['Samedi 12 décembre 2026', '50 € par personne']} />
     <section className="sc-detail">
       <Link href="/voyages" className="sc-textlink"><ArrowLeft size={15} /> Tous les voyages</Link>
@@ -419,7 +436,7 @@ export function ProgrammePage({ slug }: { slug: string }) {
 /* ---------- About ---------- */
 export function AboutPage() {
   const imgs = content.historyImages;
-  return <PublicLayout><main>
+  return <PublicLayout title="À propos" description="Entreprise familiale de transport en autocar depuis plus de 40 ans, basée à Perwez dans le Brabant wallon."><main>
     <PageHero image={imgs[2]} kicker="À propos" title="Depuis plus de 40 ans, sur la route." meta={['Entreprise familiale', 'Perwez, Brabant wallon']} />
     <section className="sc-intro">
       <Kicker n="01">Qui sommes-nous ?</Kicker>
@@ -439,8 +456,8 @@ export function AboutPage() {
 
 /* ---------- Vehicles ---------- */
 export function VehiclesPage() {
-  return <PublicLayout><main>
-    <PageHero image={content.fleet[0].image} kicker="Nos véhicules" title="Voyagez en toute sérénité." meta={['13 modèles', 'Jusqu’à 83 places']}><p>Nos autocars, allant jusqu’à 83 places, sont soigneusement sélectionnés pour offrir un maximum de confort et sont équipés des dernières technologies de sécurité.</p></PageHero>
+  return <PublicLayout title="Nos autocars" description="Du minibus au double étage de 83 places : découvrez la flotte B-TRAVEL et choisissez l’autocar adapté à votre groupe."><main>
+    <PageHero cutout={content.fleet[1].image} kicker="Nos véhicules" title="Voyagez en toute sérénité." meta={['13 modèles', 'Jusqu’à 83 places']}><p>Nos autocars, allant jusqu’à 83 places, sont soigneusement sélectionnés pour offrir un maximum de confort et sont équipés des dernières technologies de sécurité.</p></PageHero>
     <section className="sc-fleetzone">
       <div className="sc-head sc-head-light"><div><Kicker n="01">Trouver le bon véhicule</Kicker><h2>Du minibus au double étage.</h2></div></div>
       <FleetChooser />
@@ -455,8 +472,8 @@ export function VehiclesPage() {
 
 /* ---------- Contact ---------- */
 export function Contact() {
-  return <PublicLayout><main>
-    <PageHero image={content.historyImages[5]} kicker="Contact" title="Un mot suffit pour commencer." meta={['Perwez', 'Nil-Saint-Vincent']} />
+  return <PublicLayout title="Contact" description="Contactez B-TRAVEL à Perwez : +32 10 65 02 01, info@b-travel.be, ou envoyez votre demande de transport en ligne."><main>
+    <PageHero kicker="Contact" title="Un mot suffit pour commencer." meta={['Perwez', 'Nil-Saint-Vincent']} />
     <section className="sc-section">
       <div className="sc-contact">
         <a href={PHONE_HREF} className="rv"><span className="sc-mono">Téléphone</span><strong>{A.phone}</strong></a>
@@ -477,8 +494,8 @@ export function Contact() {
 
 /* ---------- Legal ---------- */
 export function LegislationPage() {
-  return <PublicLayout><main>
-    <PageHero image={content.historyImages[0]} kicker="Législation" title="Les règles de la route." meta={['Temps de conduite', 'Tachygraphe']} />
+  return <PublicLayout title="Législation" description="Temps de conduite et de repos des chauffeurs d’autocar : la réglementation appliquée par B-TRAVEL."><main>
+    <PageHero kicker="Législation" title="Les règles de la route." meta={['Temps de conduite', 'Tachygraphe']} />
     <section className="sc-detail sc-legal">
       <div className="sc-warn sc-warn-wide"><CircleAlert size={18} /><span>Information reproduite de l’ancien site b-travel.be. Elle doit être vérifiée au regard de la réglementation en vigueur et ne constitue pas une validation de planification opérationnelle.</span></div>
       <SourceMarkdown md={pageMd('legislation')} skip={[/^## Législation/]} />
@@ -487,8 +504,8 @@ export function LegislationPage() {
 }
 export function TermsPage() {
   const md = pageMd('termes-et-conditions').replace('+32 2 123 45 67', '+32 10 65 02 01');
-  return <PublicLayout><main>
-    <PageHero image={content.historyImages[1]} kicker="Termes et conditions" title="Conditions générales d’utilisation." meta={['Droit belge', '10 articles']} />
+  return <PublicLayout title="Conditions générales"><main>
+    <PageHero kicker="Termes et conditions" title="Conditions générales d’utilisation." meta={['Droit belge', '10 articles']} />
     <section className="sc-detail sc-legal">
       <div className="sc-warn sc-warn-wide"><CircleAlert size={18} /><span>Texte repris de l’ancien site, en attente de validation juridique. Actuellement, les demandes et inscriptions sont confirmées manuellement par l’équipe et aucun paiement en ligne n’est proposé.</span></div>
       <SourceMarkdown md={md} skip={[/^## Termes/]} />
@@ -514,7 +531,7 @@ export function TripDetail({ id }: { id: string }) {
     else idempotency.current.payload = payload;
     create.mutate({ data, key: idempotency.current.key }, { onSuccess: () => setSent(true) });
   };
-  return <PublicLayout><main>
+  return <PublicLayout title={t.title} description={t.description?.slice(0, 155)}><main>
     <PageHero image={t.imageUrl || content.heroImage} kicker={`Prochain départ · ${date(t.startDate)}`} title={t.title} meta={[t.destination, `${t.remainingSeats} places disponibles`]} />
     <section className="sc-detail">
       <Link href="/voyages" className="sc-textlink"><ArrowLeft size={15} /> Tous les voyages</Link>
@@ -539,8 +556,8 @@ export function TripDetail({ id }: { id: string }) {
 
 /* ---------- Quote page ---------- */
 export function TransportRequest() {
-  return <PublicLayout><main>
-    <PageHero image={content.fleet[2].image} kicker="Devis gratuit" title="Parlons de votre trajet." meta={['Réponse par l’équipe', 'Sans engagement']}><p>Décrivez votre besoin en trois étapes. Cette demande ne constitue pas une réservation : notre équipe revient vers vous avec un devis.</p></PageHero>
+  return <PublicLayout title="Demande de devis" description="Demandez gratuitement un devis pour votre transport en autocar : sortie scolaire, groupe, entreprise, navette ou voyage."><main>
+    <PageHero cutout={content.fleet[2].image} kicker="Devis gratuit" title="Parlons de votre trajet." meta={['Réponse par l’équipe', 'Sans engagement']}><p>Décrivez votre besoin en trois étapes. Cette demande ne constitue pas une réservation : notre équipe revient vers vous avec un devis.</p></PageHero>
     <section className="sc-quotezone sc-quotezone-page">
       <div className="sc-quotezone-intro">
         <h2>Comment ça marche ?</h2>
