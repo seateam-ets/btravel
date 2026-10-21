@@ -1,0 +1,16 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "tHFNSvCcDGaMGnBGS1i8K"
+uri = "file://docs/superpowers/specs/2026-10-21-btravel-redesign-design.md"
+type = "text"
+title = "Spécification de conception B-TRAVEL"
+description = "Cadrage approuvé du site public et de l’administration, avec les décisions confirmées et les points à valider avant le développement."
+logical_id = "91a4b292-fdac-4c0b-b364-464d27fc0d46"
+content_hash = "sha256:64488274a05faee5610d544000682a8b2ac7d6761a37625b38cd3d72a8b207c3"
+size = 13471
+mtime_ms = 1792575709736
+storage_uri = "gcs://replit-rams-assets-worf/rams/assets/repl:605a65d4-a6a3-4450-8b85-30ff3d5e84ef/91a4b292-fdac-4c0b-b364-464d27fc0d46/532508a2-1e5a-4291-90f5-4b42b07a6803"
+storage_version_token = "1792575740226057"
+content_type = "text/markdown"
