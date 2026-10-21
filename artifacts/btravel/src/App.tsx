@@ -210,11 +210,12 @@ function SignInPage(){
   <div className="signin-help"><div><strong>Pas encore de compte ?</strong><span>Créez votre accès en deux minutes avec l’adresse e-mail autorisée par B-TRAVEL.</span><Link href="/sign-up" className="button button-outline">Créer mon compte</Link></div></div>
   <Link href="/" className="text-link">← Retour au site public</Link></div></main>;
 }
-function AccessProblem({status}:{status:number}){
+function AccessProblem({status,detail}:{status:number;detail?:string}){
  const {signOut}=useClerk(); const {user}=useUser();
  if(status===401)return <div className="error-panel"><CircleAlert/><div><b>Votre session a expiré.</b><p>Reconnectez-vous pour continuer. Si vous n’avez pas encore de compte, créez-le d’abord.</p><div className="access-actions"><Link href="/admin" className="button button-orange">Me reconnecter</Link><Link href="/sign-up" className="button button-outline">Créer mon compte</Link></div></div></div>;
- return <div className="error-panel"><CircleAlert/><div><b>Ce compte n’a pas accès à l’administration.</b><p>Vous êtes connectée avec <strong>{user?.primaryEmailAddress?.emailAddress??'une adresse non autorisée'}</strong>. Seules les adresses autorisées par B-TRAVEL peuvent entrer. Déconnectez-vous puis créez votre compte ou connectez-vous avec la bonne adresse e-mail.</p><div className="access-actions"><button className="button button-orange" onClick={()=>signOut({redirectUrl:`${basePath}/sign-up`})}>Créer un compte avec une autre adresse</button><button className="button button-outline" onClick={()=>signOut({redirectUrl:`${basePath}/admin`})}>Changer de compte</button></div></div></div>;
+ return <div className="error-panel"><CircleAlert/><div><b>Ce compte n’a pas accès à l’administration.</b><p>Vous êtes connectée avec <strong>{user?.primaryEmailAddress?.emailAddress??'une adresse non autorisée'}</strong>. Seules les adresses autorisées par B-TRAVEL peuvent entrer.</p>{detail&&<p className="access-detail"><strong>Raison :</strong> {detail}</p>}<div className="access-actions"><button className="button button-orange" onClick={()=>signOut({redirectUrl:`${basePath}/sign-up`})}>Créer un compte avec une autre adresse</button><button className="button button-outline" onClick={()=>signOut({redirectUrl:`${basePath}/admin`})}>Changer de compte</button></div></div></div>;
 }
+const errorDetail=(error:unknown)=>{const data=(error as {data?:{error?:unknown}}|null)?.data;return typeof data?.error==='string'?data.error:undefined;};
 const errorStatus=(error:unknown)=>typeof error==='object'&&error!==null&&'status' in error?Number((error as {status:unknown}).status):0;
 function SignUpPage(){return <main className="sign-in-placeholder"><Brand/><div className="sign-in-card"><div className="eyebrow">ESPACE B-TRAVEL</div><h1>Première connexion</h1><p>Créez votre accès avec l’adresse e-mail autorisée par B-TRAVEL. Les autres adresses n’ont pas accès à l’administration.</p><SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/admin`} forceRedirectUrl={`${basePath}/admin`} appearance={clerkAppearance}/><Link href="/admin" className="text-link">J’ai déjà un accès, me connecter</Link></div></main>}
 function RequireAdmin({children}:{children:ReactNode}){
@@ -228,7 +229,7 @@ function AccessGate({children}:{children:ReactNode}){
  const q=useGetDashboard();
  const status=q.isError?errorStatus(q.error):0;
  if(q.isLoading)return <main className="sign-in-placeholder"><div className="loading-panel"/></main>;
- if(status===401||status===403)return <main className="sign-in-placeholder"><Brand/><div className="sign-in-card"><AccessProblem status={status}/></div></main>;
+ if(status===401||status===403)return <main className="sign-in-placeholder"><Brand/><div className="sign-in-card"><AccessProblem status={status} detail={errorDetail(q.error)}/></div></main>;
  return <>{children}</>;
 }
 function ClerkQueryClientCacheInvalidator(){

@@ -7,27 +7,33 @@ import { db, staffUsers } from "@workspace/db";
 // (séparées par des virgules). Seules des adresses vérifiées par Clerk sont acceptées.
 function allowedAdminEmails(): string[] {
   return (process.env.ADMIN_EMAILS ?? "")
-    .split(",")
-    .map((email) => email.trim().toLowerCase())
+    .split(/[\s,;]+/)
+    .map((email) => email.replace(/["'<>]/g, "").trim().toLowerCase())
     .filter(Boolean);
 }
 
-async function provisionManager(userId: string): Promise<boolean> {
+type Provisioning = "granted" | "no-admin-emails" | "email-not-listed" | "email-not-verified";
+
+async function provisionManager(userId: string): Promise<Provisioning> {
   const allowed = allowedAdminEmails();
-  if (!allowed.length) return false;
+  if (!allowed.length) return "no-admin-emails";
   const user = await clerkClient.users.getUser(userId);
-  const match = user.emailAddresses.find(
-    (address) =>
-      address.verification?.status === "verified" &&
-      allowed.includes(address.emailAddress.toLowerCase()),
-  );
-  if (!match) return false;
+  const listed = user.emailAddresses.filter((address) => allowed.includes(address.emailAddress.trim().toLowerCase()));
+  if (!listed.length) return "email-not-listed";
+  const match = listed.find((address) => address.verification?.status === "verified");
+  if (!match) return "email-not-verified";
   await db
     .insert(staffUsers)
     .values({ clerkUserId: userId, email: match.emailAddress.toLowerCase(), role: "manager" })
     .onConflictDoNothing();
-  return true;
+  return "granted";
 }
+
+const refusalMessages: Record<Exclude<Provisioning, "granted">, string> = {
+  "no-admin-emails": "Le secret ADMIN_EMAILS n’est pas visible par le serveur. Redémarrez l’application (ou ajoutez-le aussi aux secrets du déploiement).",
+  "email-not-listed": "Cette adresse e-mail ne figure pas dans le secret ADMIN_EMAILS.",
+  "email-not-verified": "Cette adresse e-mail n’a pas encore été vérifiée. Validez le code reçu par e-mail puis reconnectez-vous.",
+};
 
 export async function requireManager(
   req: Request,
@@ -47,11 +53,17 @@ export async function requireManager(
       .where(eq(staffUsers.clerkUserId, userId))
       .limit(1);
 
-    if (staff?.role === "manager" || (!staff && (await provisionManager(userId)))) {
+    if (staff?.role === "manager") {
       next();
       return;
     }
-    res.status(403).json({ error: "Cet espace est réservé à la responsable." });
+    const outcome = staff ? "email-not-listed" : await provisionManager(userId);
+    if (outcome === "granted") {
+      next();
+      return;
+    }
+    req.log.warn({ outcome }, "Admin access refused");
+    res.status(403).json({ error: refusalMessages[outcome], reason: outcome });
   } catch (error) {
     req.log.error({ err: error }, "Manager authorization check failed");
     res.status(500).json({ error: "Vérification de l’accès impossible." });
