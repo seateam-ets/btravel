@@ -693,3 +693,5 @@
 .sc-heritage-track { scroll-padding-inline:max(20px,calc((100% - 1440px)/2 + 32px)); }
 .sc-monogram-bus { width:min(760px,86%); }
 @media (max-width: 960px) { .sc-nav2-overlay { height:calc(100dvh - 64px); } }
+.sc-hero3-copy h1 { font-size:clamp(32px,3.6vw,52px); letter-spacing:-.03em; line-height:1.08; margin:0 0 16px; max-width:720px; }
+.sc-hero3-copy p { font-size:clamp(15px,1.15vw,17px); margin-bottom:24px; max-width:520px; }
