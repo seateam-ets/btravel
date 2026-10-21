@@ -84,7 +84,7 @@ function useReveal() {
 }
 
 /* ---------- chrome ---------- */
-const navLinks: [string, string][] = [['/#services', 'Services'], ['/nos-vehicules', 'Nos véhicules'], ['/voyages', 'Voyages'], ['/a-propos', 'À propos'], ['/contact', 'Contact']];
+const navLinks: [string, string][] = [['/#services', 'Services'], ['/nos-vehicules', 'Nos véhicules'], ['/voyages', 'Voyages'], ['/a-propos', 'À propos de nous'], ['/contact', 'Contact']];
 function PublicNav() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -137,7 +137,7 @@ function Footer() {
       <div><img src="/btravel-logo.png" alt="B-TRAVEL" className="sc-footer-logo" /><p>Entreprise familiale de transport de passagers en autocar. Flotte basée à Perwez, Brabant wallon.</p></div>
       <div><span className="sc-mono">Exploitation</span><p>{A.operating}</p><span className="sc-mono">Siège social</span><p>{A.registered}</p></div>
       <div><span className="sc-mono">Contact</span><p><a href={PHONE_HREF}>Tél. {A.phone}</a><br />Fax {A.fax}<br /><a href={`mailto:${A.email}`}>{A.email}</a><br />TVA {A.vat}</p></div>
-      <div className="sc-footer-links"><span className="sc-mono">Plan du site</span><Link href="/voyages">Voyages</Link><Link href="/nos-vehicules">Nos véhicules</Link><Link href="/a-propos">À propos</Link><Link href="/demande-de-transport">Demande de transport</Link><Link href="/legislation">Législation</Link><Link href="/termes-et-conditions">Termes et conditions</Link><a href={content.facebook} target="_blank" rel="noreferrer">Facebook</a><Link href="/admin">Administration</Link></div>
+      <div className="sc-footer-links"><span className="sc-mono">Plan du site</span><Link href="/voyages">Voyages</Link><Link href="/nos-vehicules">Nos véhicules</Link><Link href="/a-propos">À propos de nous</Link><Link href="/demande-de-transport">Demande de transport</Link><Link href="/legislation">Législation</Link><Link href="/termes-et-conditions">Termes et conditions</Link><a href={content.facebook} target="_blank" rel="noreferrer">Facebook</a><Link href="/admin">Administration</Link></div>
     </div>
     <div className="sc-footer-bar"><span>© B-TRAVEL</span><span className="sc-mono">Perwez · BE</span><span className="sc-mono">Depuis plus de 40 ans</span></div>
   </footer>;
@@ -322,8 +322,8 @@ export function Home() {
 
     <section className="sc-who" id="qui-sommes-nous">
       <div className="sc-who-media rv">
-        <img src={content.historyImages[0]} alt="Autocar B-TRAVEL dans les années 1980" loading="lazy" />
-        <img src={content.historyImages[5]} alt="Minibus aux couleurs de B-TRAVEL" loading="lazy" />
+        <img src={content.teamImage} alt="L’équipe B-TRAVEL devant un autocar, au dépôt de Perwez" loading="lazy" />
+        <img src={content.depotImage} alt="Le dépôt B-TRAVEL à Perwez, vu du ciel" loading="lazy" />
       </div>
       <div className="sc-who-copy">
         <Kicker n="03">Qui sommes-nous ?</Kicker>
@@ -336,7 +336,7 @@ export function Home() {
           <li><b>Partenaire</b><span>de la Province du Brabant wallon</span></li>
           <li><b>Membre</b><span>de la Fédération belge des entrepreneurs de transport par autobus et autocars</span></li>
         </ul>
-        <Link href="/a-propos" className="sc-btn sc-btn-dark">En savoir plus sur B-TRAVEL <ArrowRight size={16} /></Link>
+        <Link href="/a-propos" className="sc-btn sc-btn-dark">À propos de nous <ArrowRight size={16} /></Link>
       </div>
     </section>
 
@@ -457,21 +457,36 @@ export function ProgrammePage({ slug }: { slug: string }) {
 /* ---------- About ---------- */
 export function AboutPage() {
   const imgs = content.historyImages;
-  return <PublicLayout title="À propos" description="Entreprise familiale de transport en autocar depuis plus de 40 ans, basée à Perwez dans le Brabant wallon."><main>
-    <PageHero image={imgs[2]} kicker="À propos" title="Depuis plus de 40 ans, sur la route." meta={['Entreprise familiale', 'Perwez, Brabant wallon']} />
-    <section className="sc-intro">
-      <Kicker n="01">Qui sommes-nous ?</Kicker>
-      <p className="sc-statement rv">Active depuis plus de 40 ans, <b>B-TRAVEL</b> est une société familiale spécialisée dans le transport de personnes en autocars. Le parc des véhicules se situe à Perwez dans la province du Brabant Wallon.</p>
+  return <PublicLayout title="À propos de nous" description="B-TRAVEL, entreprise familiale de transport de personnes en autocars depuis plus de 40 ans, basée à Perwez dans le Brabant wallon."><main>
+    <PageHero image={content.depotImage} kicker="À propos de nous" title="Une histoire de famille, depuis plus de 40 ans." meta={['Entreprise familiale', 'Dépôt à Perwez, Brabant wallon']} />
+    <section className="sc-team">
+      <figure className="sc-team-photo rv"><img src={content.teamImage} alt="L’équipe B-TRAVEL devant un autocar double étage, au dépôt de Perwez" /><figcaption>L’équipe B-TRAVEL au dépôt de Perwez</figcaption></figure>
+      <div className="sc-team-copy">
+        <Kicker n="01">Qui sommes-nous ?</Kicker>
+        <h2 className="rv">Une équipe familiale à votre service.</h2>
+        <p className="rv">Active depuis plus de 40 ans, <b>B-TRAVEL</b> est une société familiale spécialisée dans le transport de personnes en autocars. Le parc des véhicules se situe à Perwez, dans la province du Brabant wallon.</p>
+        <p className="rv">Depuis plus de 40 ans, B-TRAVEL accompagne écoles, entreprises et groupes dans tous leurs déplacements en Belgique et à l’étranger. Vous êtes enseignant et vous devez organiser le transport de vos élèves vers un musée ? Vous avez besoin de navettes pour votre évènement ? Un voyage à l’étranger ? Quel que soit le motif de vos déplacements, nous sommes à votre service.</p>
+        <ul className="sc-who-facts rv">
+          <li><b>Plus de 40 ans</b><span>d’expérience familiale</span></li>
+          <li><b>Jusqu’à 83 places</b><span>du minibus au double étage</span></li>
+          <li><b>Partenaire</b><span>de la Province du Brabant wallon</span></li>
+          <li><b>Membre</b><span>de la Fédération belge des entrepreneurs de transport par autobus et autocars</span></li>
+        </ul>
+      </div>
     </section>
     <section className="sc-split">
-      <img src={imgs[4]} alt="Autocar B-TRAVEL" className="rv" loading="lazy" />
-      <div className="rv"><Kicker n="02">Pourquoi nous choisir ?</Kicker><h2>Sécurité et confort.</h2><p>Peu importe votre destination, nous nous engageons à ce que votre expérience avec <b>B-TRAVEL</b> soit à l’image de vos espérances. Nous insistons sur deux points en particulier : votre sécurité et votre confort.</p><Link href="/legislation" className="sc-textlink">La réglementation des chauffeurs <ArrowRight size={15} /></Link></div>
+      <img src={content.fleetImage} alt="Trois autocars B-TRAVEL au dépôt" className="rv" loading="lazy" />
+      <div className="rv"><Kicker n="02">Pourquoi nous choisir ?</Kicker><h2>Sécurité et confort.</h2><p>Peu importe votre destination, nous nous engageons à ce que votre expérience avec <b>B-TRAVEL</b> soit à l’image de vos espérances. Nous insistons sur deux points en particulier : votre sécurité et votre confort.</p><p>Nos autocars, allant jusqu’à 83 places, sont soigneusement sélectionnés pour offrir un maximum de confort et sont équipés des dernières technologies de sécurité.</p><Link href="/legislation" className="sc-textlink">La réglementation des chauffeurs <ArrowRight size={15} /></Link></div>
     </section>
-    <section className="sc-section">
-      <div className="sc-head"><div><Kicker n="03">Galerie</Kicker><h2>La flotte, au dépôt et sur la route.</h2></div></div>
-      <div className="sc-gallery">{imgs.map((src, i) => <figure key={src} className="rv"><img src={src} alt={`Photographie B-TRAVEL ${i + 1}`} loading="lazy" /><figcaption className="sc-mono">{String(i + 1).padStart(2, '0')} / {String(imgs.length).padStart(2, '0')}</figcaption></figure>)}</div>
+    <section className="sc-section sc-section-tint">
+      <div className="sc-head"><div><Kicker n="03">Notre histoire</Kicker><h2>Des archives à aujourd’hui.</h2></div><p className="sc-note">Quelques photographies d’archives des premiers autocars aux couleurs de B-TRAVEL.</p></div>
+      <div className="sc-gallery">{imgs.map((src, i) => <figure key={src} className="rv"><img src={src} alt={`Archives B-TRAVEL, photographie ${i + 1}`} loading="lazy" /><figcaption className="sc-mono">Archives · {String(i + 1).padStart(2, '0')}</figcaption></figure>)}</div>
     </section>
-    <section className="sc-cta-band"><h2>Parlons de votre trajet.</h2><div><Link href="/demande-de-transport" className="sc-btn sc-btn-light">Demander un devis <ArrowRight size={16} /></Link></div></section>
+    <section className="sc-section sc-partners">
+      <Kicker n="04">Partenaires et réseaux</Kicker>
+      <div className="sc-partner-row">{content.partners.map(p => <div className="sc-partner rv" key={p.name}><img src={p.image} alt={p.name} loading="lazy" /><p>{p.description}</p></div>)}</div>
+    </section>
+    <section className="sc-cta-band"><h2>Parlons de votre trajet.</h2><div><Link href="/demande-de-transport" className="sc-btn sc-btn-light">Demander un devis <ArrowRight size={16} /></Link><Link href="/contact" className="sc-btn sc-btn-ghost">Nous contacter</Link></div></section>
   </main></PublicLayout>;
 }
 

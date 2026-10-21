@@ -795,3 +795,21 @@
   .sc-who-facts { grid-template-columns:1fr; }
   .sc-who-media { min-height:260px; }
 }
+
+/* ===== À propos de nous : l'équipe ===== */
+.sc-team { padding:clamp(64px,8vw,112px) max(20px,calc((100% - 1440px)/2 + 32px)); display:grid; grid-template-columns:.85fr 1.15fr; gap:clamp(32px,6vw,96px); align-items:center; }
+.sc-team-photo { margin:0; }
+.sc-team-photo img { width:100%; aspect-ratio:4/5; object-fit:cover; object-position:center 35%; border-radius:20px; display:block; }
+.sc-team-photo figcaption { font-size:14px; color:#616161; padding-top:10px; }
+.sc-team-copy { display:grid; gap:18px; }
+.sc-team-copy h2 { font-size:clamp(32px,3.8vw,52px); font-weight:500; letter-spacing:-.034em; line-height:1.08; }
+.sc-team-copy p { font-size:17px; line-height:1.65; color:#4a4a4a; }
+.sc-who-media img:first-child { object-position:center 30%; }
+.sc-split img { aspect-ratio:4/3; }
+@media (max-width: 960px) { .sc-team { grid-template-columns:1fr; } .sc-team-photo img { aspect-ratio:4/4; } }
+.sc-who-media { min-height:600px; }
+.sc-who-media img:first-child { inset:0 32% 0 0; width:68%; height:100%; object-position:center 60%; }
+.sc-who-media img:last-child { right:0; bottom:10%; width:50%; height:38%; }
+@media (max-width: 960px) { .sc-who-media { min-height:480px; } }
+@media (max-width: 640px) { .sc-who-media { min-height:420px; } }
+.sc-who-media img:last-child { bottom:-24px; width:44%; height:32%; }

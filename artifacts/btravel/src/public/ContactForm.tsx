@@ -4,6 +4,15 @@ import { ArrowRight, Check } from 'lucide-react';
 import { createContactMessage } from '@workspace/api-client-react';
 import type { ContactMessageInput } from '@workspace/api-client-react';
 
+function errorText(error: unknown): string {
+  const status = (error as { status?: number } | null)?.status;
+  const message = (error as { data?: { error?: unknown } } | null)?.data?.error;
+  if (typeof message === 'string') return message;
+  if (status === 429) return 'Trop de messages envoyés. Réessayez dans quelques minutes.';
+  if (!status) return 'Connexion impossible. Vérifiez votre connexion internet puis réessayez.';
+  return 'L’envoi n’a pas abouti. Réessayez dans un instant.';
+}
+
 const subjects = ['Question générale', 'Voyages organisés', 'Transport régulier', 'Facturation', 'Autre'];
 
 /** Formulaire de contact simple : arrive dans Admin → Demandes de contact. */
@@ -30,7 +39,7 @@ export function ContactForm({ phone, phoneHref }: { phone: string; phoneHref: st
       <label className="qf-field"><span>Sujet</span><select value={v.subject} onChange={set('subject')}>{subjects.map(s => <option key={s}>{s}</option>)}</select></label>
       <label className="qf-field qf-wide"><span>Votre message</span><textarea required minLength={5} maxLength={4000} rows={6} value={v.message} onChange={set('message')} /></label>
     </div>
-    {send.isError && <p className="qf-error" role="alert">L’envoi n’a pas abouti. Réessayez, ou appelez-nous au <a href={phoneHref}>{phone}</a>.</p>}
+    {send.isError && <p className="qf-error" role="alert">{errorText(send.error)} Vous pouvez aussi nous appeler au <a href={phoneHref}>{phone}</a>.</p>}
     <div className="qf-nav">
       <p className="qf-small">Vos coordonnées servent uniquement à vous répondre.</p>
       <button type="submit" className="sc-btn sc-btn-dark" disabled={send.isPending}>{send.isPending ? 'Envoi en cours…' : <>Envoyer le message <ArrowRight size={16} /></>}</button>
