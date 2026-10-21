@@ -261,7 +261,6 @@ export function Home() {
       <img src={content.heroImage} alt="Intérieur d’un autocar B-TRAVEL" className="sc-hero-img sc-kenburns" />
       <div className="sc-hero-shade sc-hero-shade-v3" />
       <div className="sc-hero3-copy">
-        <span className="sc-hero3-tag sc-fade" style={{ animationDelay: '.1s' }}><i />Entreprise familiale · Perwez, Brabant wallon</span>
         <h1 className="sc-fade" style={{ animationDelay: '.25s' }}>Voyagez ensemble,<br />on s’occupe de la route.</h1>
         <p className="sc-fade" style={{ animationDelay: '.4s' }}>Autocars avec chauffeur pour les écoles, les groupes, les entreprises et les voyages en Europe, depuis plus de 40 ans.</p>
         <div className="sc-hero-actions sc-fade" style={{ animationDelay: '.55s' }}>
