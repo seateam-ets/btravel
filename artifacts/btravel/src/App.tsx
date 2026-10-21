@@ -221,6 +221,14 @@ function RequireAdmin({children}:{children:ReactNode}){
  const {isLoaded,isSignedIn}=useAuth(); const [path]=useLocation();
  if(!isLoaded)return <main className="sign-in-placeholder"><div className="loading-panel"/></main>;
  if(!isSignedIn)return path==='/admin'?<SignInPage/>:<Redirect to="/admin"/>;
+ return <AccessGate>{children}</AccessGate>;
+}
+// Vérifie une seule fois que le compte connecté est bien autorisé avant d'afficher une page admin.
+function AccessGate({children}:{children:ReactNode}){
+ const q=useGetDashboard();
+ const status=q.isError?errorStatus(q.error):0;
+ if(q.isLoading)return <main className="sign-in-placeholder"><div className="loading-panel"/></main>;
+ if(status===401||status===403)return <main className="sign-in-placeholder"><Brand/><div className="sign-in-card"><AccessProblem status={status}/></div></main>;
  return <>{children}</>;
 }
 function ClerkQueryClientCacheInvalidator(){

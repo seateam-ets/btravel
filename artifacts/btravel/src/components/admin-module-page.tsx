@@ -585,7 +585,7 @@ function AdminModulePage({ path, title, subtitle, columns, Shell }: ModuleProps)
     path === "/admin/factures" ? invoices.data :
     path === "/admin/documents" ? documents.data :
     path === "/admin/taches" ? tasks.data : []
-  ) as unknown as Row[];
+  ) as unknown as Row[] | undefined ?? [];
 
   const filtered = rawData.filter((row) =>
     JSON.stringify(row).toLowerCase().includes(search.toLowerCase().trim()),
