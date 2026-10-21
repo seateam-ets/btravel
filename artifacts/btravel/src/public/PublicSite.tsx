@@ -83,28 +83,50 @@ function useReveal() {
 }
 
 /* ---------- chrome ---------- */
-const navLinks: [string, string][] = [['/voyages', 'Voyages'], ['/nos-vehicules', 'Nos véhicules'], ['/a-propos', 'À propos'], ['/contact', 'Contact']];
+const navLinks: [string, string][] = [['/#services', 'Services'], ['/nos-vehicules', 'Nos véhicules'], ['/voyages', 'Voyages'], ['/a-propos', 'À propos'], ['/contact', 'Contact']];
 function PublicNav() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  useEffect(() => { const f = () => setScrolled(window.scrollY > 40); f(); window.addEventListener('scroll', f, { passive: true }); return () => window.removeEventListener('scroll', f); }, []);
+  const [hidden, setHidden] = useState(false);
+  const [overPhoto, setOverPhoto] = useState(true);
+  const [location] = useLocation();
+  useEffect(() => {
+    // Transparent seulement si la page commence par une grande photo.
+    setOverPhoto(!!document.querySelector('.sc-site main > section:first-child:is(.sc-hero, .sc-pagehero)'));
+    let last = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 24);
+      setHidden(y > 320 && y > last + 4);
+      if (y < last - 4) setHidden(false);
+      last = y;
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [location]);
+  useEffect(() => { document.body.style.overflow = open ? 'hidden' : ''; return () => { document.body.style.overflow = ''; }; }, [open]);
+  useEffect(() => setOpen(false), [location]);
   const close = () => setOpen(false);
-  return <header className={`sc-nav${scrolled ? ' is-scrolled' : ''}${open ? ' is-open' : ''}`}>
-    <span className="sc-tick sc-tick-l" aria-hidden />
-    <div className="sc-nav-main">
-      <Link href="/" className="sc-logo" aria-label="B-TRAVEL, accueil" onClick={close}><img src="/btravel-logo.png" alt="B-TRAVEL" /></Link>
-      <nav aria-label="Navigation principale">{navLinks.map(([h, l]) => <Link key={h} href={h} onClick={close}>{l}</Link>)}</nav>
+  const solid = scrolled || open || !overPhoto;
+  const isActive = (href: string) => !href.includes('#') && location.startsWith(href);
+  return <header className={`sc-nav2${solid ? ' is-solid' : ''}${hidden && !open ? ' is-hidden' : ''}${open ? ' is-open' : ''}`}>
+    <div className="sc-nav2-bar">
+      <Link href="/" className="sc-nav2-logo" aria-label="B-TRAVEL, accueil" onClick={close}><img src="/btravel-logo.png" alt="B-TRAVEL" /></Link>
+      <nav className="sc-nav2-links" aria-label="Navigation principale">{navLinks.map(([h, l]) => <a key={h} href={h} onClick={close} className={isActive(h) ? 'is-active' : ''}>{l}</a>)}</nav>
+      <div className="sc-nav2-actions">
+        <a href={PHONE_HREF} className="sc-nav2-phone"><Phone size={15} /><span>{A.phone}</span></a>
+        <Link href="/demande-de-transport" className="sc-nav2-cta" onClick={close}>Demander un devis</Link>
+        <button className="sc-nav2-burger" aria-label={open ? 'Fermer le menu' : 'Ouvrir le menu'} aria-expanded={open} onClick={() => setOpen(v => !v)}><span /><span /></button>
+      </div>
     </div>
-    <span className="sc-tick sc-tick-mid" aria-hidden />
-    <div className="sc-nav-side">
-      <Link href="/demande-de-transport" className="sc-nav-cta" onClick={close}>Demander un devis</Link>
-      <button className="sc-burger" aria-label={open ? 'Fermer le menu' : 'Ouvrir le menu'} aria-expanded={open} onClick={() => setOpen(v => !v)}>{open ? <X size={16} /> : <Menu size={16} />}</button>
-    </div>
-    <span className="sc-tick sc-tick-r" aria-hidden />
-    <div className="sc-drawer" hidden={!open}>
-      {navLinks.map(([h, l], i) => <Link key={h} href={h} onClick={close}><span>0{i + 1}</span>{l}</Link>)}
-      <Link href="/demande-de-transport" onClick={close}><span>05</span>Demande de transport</Link>
-      <div className="sc-drawer-meta"><a href={PHONE_HREF}>{A.phone}</a><a href={`mailto:${A.email}`}>{A.email}</a></div>
+    <div className="sc-nav2-overlay" hidden={!open}>
+      <nav aria-label="Menu mobile">{navLinks.map(([h, l], i) => <a key={h} href={h} onClick={close} style={{ animationDelay: `${i * 50}ms` }}>{l}<ArrowUpRight size={22} /></a>)}</nav>
+      <div className="sc-nav2-overlay-foot">
+        <Link href="/demande-de-transport" className="sc-btn sc-btn-sig sc-full" onClick={close}>Demander un devis <ArrowRight size={16} /></Link>
+        <a href={PHONE_HREF} className="sc-btn sc-btn-outline sc-full"><Phone size={15} /> {A.phone}</a>
+        <a href={`mailto:${A.email}`} className="sc-nav2-mail">{A.email}</a>
+      </div>
     </div>
   </header>;
 }
@@ -174,22 +196,18 @@ const services = [
 
 function ExpressQuote() {
   const [, navigate] = useLocation();
-  return <form className="sc-express" onSubmit={e => {
+  return <form className="sc-bookbar" aria-label="Devis rapide" onSubmit={e => {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
     const q = new URLSearchParams();
     for (const [key, value] of f.entries()) if (String(value).trim()) q.set(key, String(value));
     navigate(`/demande-de-transport${q.size ? `?${q}` : ''}`);
   }}>
-    <div className="sc-express-head"><span className="sc-mono">Devis gratuit</span><strong>Votre trajet en 1 minute</strong></div>
-    <label>Type de transport<select name="type" defaultValue=""><option value="">Choisir…</option>{transportTypes.map(t => <option key={t.value}>{t.value}</option>)}</select></label>
-    <div className="sc-express-row">
-      <label>Passagers<input name="passagers" type="number" min={1} max={999} inputMode="numeric" placeholder="45" /></label>
-      <label>Date<input name="date" type="date" /></label>
-    </div>
-    <label>Destination<input name="destination" placeholder="Ex. Pairi Daiza" /></label>
-    <button className="sc-btn sc-btn-dark sc-full">Continuer ma demande <ArrowRight size={16} /></button>
-    <a href={PHONE_HREF} className="sc-express-phone"><Phone size={14} /> Ou appelez-nous : {A.phone}</a>
+    <label className="sc-bookbar-field"><span>Transport</span><select name="type" defaultValue=""><option value="">Type de trajet</option>{transportTypes.map(t => <option key={t.value}>{t.value}</option>)}</select></label>
+    <label className="sc-bookbar-field"><span>Destination</span><input name="destination" placeholder="Où allez-vous ?" /></label>
+    <label className="sc-bookbar-field"><span>Date</span><input name="date" type="date" /></label>
+    <label className="sc-bookbar-field sc-bookbar-pax"><span>Passagers</span><input name="passagers" type="number" min={1} max={999} inputMode="numeric" placeholder="45" /></label>
+    <button className="sc-btn sc-btn-dark">Obtenir un devis <ArrowRight size={16} /></button>
   </form>;
 }
 
@@ -239,30 +257,38 @@ export function Home() {
   const hasApiCologne = list.some(isCologne);
   const reviews = content.reviews;
   return <PublicLayout><main>
-    <section className="sc-hero sc-hero-v2">
-      <img src={content.heroImage} alt="Autocar B-TRAVEL" className="sc-hero-img sc-kenburns" />
-      <div className="sc-hero-shade sc-hero-shade-v2" />
-      <div className="sc-hero-grid">
-        <div className="sc-hero-copy-v2">
-          <span className="sc-mono sc-fade" style={{ animationDelay: '.15s' }}>Autocars avec chauffeur · Perwez, Brabant wallon</span>
-          <h1 className="sc-fade" style={{ animationDelay: '.3s' }}>Vos déplacements en autocar, en toute confiance.</h1>
-          <p className="sc-fade" style={{ animationDelay: '.45s' }}>Entreprise familiale depuis plus de 40 ans, B-TRAVEL transporte écoles, groupes, entreprises et voyageurs en Belgique et partout en Europe.</p>
-          <div className="sc-hero-actions sc-fade" style={{ animationDelay: '.6s' }}>
-            <Link href="/demande-de-transport" className="sc-btn sc-btn-sig">Demander un devis <ArrowRight size={16} /></Link>
-            <a href="#flotte" className="sc-btn sc-btn-ghost">Découvrir nos autocars</a>
-          </div>
+    <section className="sc-hero sc-hero-v3">
+      <img src={content.heroImage} alt="Intérieur d’un autocar B-TRAVEL" className="sc-hero-img sc-kenburns" />
+      <div className="sc-hero-shade sc-hero-shade-v3" />
+      <div className="sc-hero3-copy">
+        <span className="sc-hero3-tag sc-fade" style={{ animationDelay: '.1s' }}><i />Entreprise familiale · Perwez, Brabant wallon</span>
+        <h1 className="sc-fade" style={{ animationDelay: '.25s' }}>Voyagez ensemble,<br />on s’occupe de la route.</h1>
+        <p className="sc-fade" style={{ animationDelay: '.4s' }}>Autocars avec chauffeur pour les écoles, les groupes, les entreprises et les voyages en Europe, depuis plus de 40 ans.</p>
+        <div className="sc-hero-actions sc-fade" style={{ animationDelay: '.55s' }}>
+          <a href="#flotte" className="sc-btn sc-btn-light">Découvrir nos autocars</a>
+          <Link href="/voyages" className="sc-btn sc-btn-ghost">Voyages organisés</Link>
         </div>
-        <div className="sc-fade" style={{ animationDelay: '.7s' }}><ExpressQuote /></div>
       </div>
-      <ul className="sc-hero-stats">
-        <li><strong>40+</strong><span>ans d’expérience familiale</span></li>
-        <li><strong>13</strong><span>modèles, du minibus au double étage</span></li>
-        <li><strong>83</strong><span>places dans nos plus grands autocars</span></li>
-        <li><strong><Star size={18} fill="currentColor" /> Excellent</strong><span>16 avis Google</span></li>
+      <div className="sc-hero3-bottom sc-fade" style={{ animationDelay: '.7s' }}><ExpressQuote /></div>
+    </section>
+
+    <section className="sc-monogram">
+      <p className="sc-monogram-word rv" aria-hidden="true">B-TRAVEL</p>
+      <img className="sc-monogram-bus rv" src={fleetCategories.find(c => c.id === 'double')?.models[0].image ?? content.fleet[1].image} alt="Autocar double étage Néoplan Skyliner B-TRAVEL" loading="lazy" />
+      <div className="sc-monogram-copy rv">
+        <h2>Du minibus au double étage.</h2>
+        <p>Treize modèles entretenus à Perwez, jusqu’à 83 places, pour emmener chaque groupe en toute sécurité.</p>
+        <div className="sc-monogram-actions"><a href="#flotte" className="sc-btn sc-btn-dark">Choisir mon autocar</a><Link href="/nos-vehicules" className="sc-btn sc-btn-pale">Voir la flotte</Link></div>
+      </div>
+      <ul className="sc-monogram-stats">
+        <li><strong>40+</strong><span>ans d’expérience</span></li>
+        <li><strong>13</strong><span>modèles d’autocars</span></li>
+        <li><strong>83</strong><span>places au maximum</span></li>
+        <li><strong>16</strong><span>avis Google « Excellent »</span></li>
       </ul>
     </section>
 
-    <section className="sc-section">
+    <section className="sc-section" id="services">
       <div className="sc-head"><div><Kicker n="01">Nos services</Kicker><h2 className="rv">Un autocar pour chaque projet.</h2></div><p className="sc-note">Vous êtes enseignant, responsable d’association ou organisateur d’événement ? Quel que soit le motif de vos déplacements, nous sommes à votre service.</p></div>
       <div className="sc-services">{services.map((sv, i) => {
         const Icon = sv.icon;
@@ -288,20 +314,26 @@ export function Home() {
       </ul>
     </section>
 
+    <section className="sc-heritage">
+      <div className="sc-head"><div><Kicker n="04">Notre histoire</Kicker><h2 className="rv">Plus de 40 ans sur la route.</h2></div><p className="sc-note">Des premiers autocars aux couleurs B-TRAVEL jusqu’aux traversées vers l’étranger : une histoire de famille, de confiance et de kilomètres partagés.</p></div>
+      <div className="sc-heritage-track">{content.historyImages.map((src, i) => <figure key={src} className="rv" style={{ transitionDelay: `${(i % 3) * 70}ms` }}><img src={src} alt={`Archives B-TRAVEL, photographie ${i + 1}`} loading="lazy" /><figcaption>Archives B-TRAVEL · {String(i + 1).padStart(2, '0')}</figcaption></figure>)}</div>
+      <Link href="/a-propos" className="sc-textlink">Découvrir notre histoire <ArrowRight size={15} /></Link>
+    </section>
+
     <section className="sc-section sc-section-tint">
-      <div className="sc-head"><div><Kicker n="04">Prochains départs</Kicker><h2 className="rv">Voyages organisés au départ de Perwez, Wavre et Bruxelles.</h2></div><Link href="/voyages" className="sc-textlink">Tous nos voyages <ArrowRight size={15} /></Link></div>
+      <div className="sc-head"><div><Kicker n="05">Prochains départs</Kicker><h2 className="rv">Voyages organisés au départ de Perwez, Wavre et Bruxelles.</h2></div><Link href="/voyages" className="sc-textlink">Tous nos voyages <ArrowRight size={15} /></Link></div>
       <TripCards trips={list} loading={trips.isLoading} error={trips.isError} retry={() => trips.refetch()} />
       {!trips.isLoading && !hasApiCologne && <AnnouncementCard />}
     </section>
 
     <section className="sc-section sc-reviews">
-      <div className="sc-head"><div><Kicker n="05">Ce qu’ils disent de nous</Kicker><h2 className="rv">« Excellent », sur la base de 16 avis Google.</h2></div></div>
+      <div className="sc-head"><div><Kicker n="06">Ce qu’ils disent de nous</Kicker><h2 className="rv">« Excellent », sur la base de 16 avis Google.</h2></div></div>
       <div className="sc-review-row">{reviews.filter(r => !r.text.startsWith('Avis sans')).map((r, i) => <figure key={r.name} className="sc-review rv" style={{ transitionDelay: `${i * 80}ms` }}><div className="sc-stars" aria-label="5 étoiles">{[1, 2, 3, 4, 5].map(n => <Star key={n} size={14} fill="currentColor" />)}</div><blockquote>« {r.text} »</blockquote><figcaption><span className="sc-avatar">{r.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</span><span>{r.name}<small className="sc-mono">{r.date} · Google</small></span></figcaption></figure>)}</div>
     </section>
 
     <section className="sc-quotezone" id="devis">
       <div className="sc-quotezone-intro">
-        <Kicker n="06">Demande de devis</Kicker>
+        <Kicker n="07">Demande de devis</Kicker>
         <h2 className="rv">Parlez-nous de votre trajet.</h2>
         <p>Trois étapes, environ deux minutes. Nous vous répondons avec un devis personnalisé, gratuit et sans engagement.</p>
         <ul className="sc-quotezone-list"><li><Check size={16} />Réponse par notre équipe, pas par un robot</li><li><Check size={16} />Prix validé au cas par cas</li><li><Check size={16} />Aucun paiement en ligne</li></ul>
@@ -311,7 +343,7 @@ export function Home() {
     </section>
 
     <section className="sc-section sc-partners">
-      <Kicker n="07">Partenaires et réseaux</Kicker>
+      <Kicker n="08">Partenaires et réseaux</Kicker>
       <div className="sc-partner-row">{content.partners.map(p => <div className="sc-partner rv" key={p.name}><img src={p.image} alt={p.name} loading="lazy" /><p>{p.description}</p></div>)}
         <a className="sc-partner sc-fb rv" href={content.facebook} target="_blank" rel="noreferrer"><span className="sc-mono">Suivez-nous sur les réseaux</span><strong>Facebook · Autocars B-TRAVEL</strong><ArrowUpRight /></a></div>
     </section>
