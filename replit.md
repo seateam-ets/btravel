@@ -40,6 +40,12 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 _Populate as you build — sharp edges, "always run X before Y" rules._
 
+## Accès à l’administration
+
+- Adresse : `/admin` (ou lien « Administration » en pied de page). Connexion : `/sign-in`, première connexion : `/sign-up`.
+- Secret Replit requis : `ADMIN_EMAILS` (adresses autorisées, séparées par des virgules). Au premier accès, un compte Clerk dont l’adresse e-mail vérifiée figure dans cette liste est enregistré comme responsable (`btravel_staff_users`). Toute autre adresse reçoit un refus (403).
+- Les demandes envoyées via le formulaire public (accueil, `/demande-de-transport`, `/contact`) apparaissent dans Admin → Demandes de devis (statut « Nouvelle », bouton « Voir la demande »).
+
 ## Pointers
 
 - See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
