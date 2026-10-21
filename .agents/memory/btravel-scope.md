@@ -20,3 +20,9 @@ Décisions de cadrage confirmées pour la première mise en ligne : inclure les 
 **Why:** Ces choix ont été confirmés par l’utilisateur pendant le cadrage du projet.
 
 **How to apply:** Les reprendre dans la spécification et le plan d’exécution, mais ne pas commencer le développement avant validation de ces livrables et des autres décisions ouvertes.
+
+L’architecture, la structure du site public et l’organisation de l’administration présentées en conversation ont été approuvées. L’administration regroupe ses fonctions dans Accueil, Demandes et devis, Planning des trajets, Clients, Facturation, Voyages organisés et Paramètres.
+
+**Why:** L’utilisateur a validé séparément ces trois sections de conception.
+
+**How to apply:** Les reprendre telles quelles dans la spécification ; garder la direction visuelle provisoire jusqu’au questionnaire cliente.
