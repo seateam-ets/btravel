@@ -1055,3 +1055,12 @@ input,select,textarea {
 .request-details dt { color:#5f6a74; }
 .request-details dd { margin:0; font-weight:600; }
 .request-details a { text-decoration:underline; }
+
+/* aide à la connexion */
+.signin-help { display:flex; gap:12px; margin:18px 0; padding:16px; border:1px solid #d2dad7; border-radius:8px; background:#fff; font-size:14px; }
+.signin-help>div { display:grid; gap:8px; }
+.signin-help span { color:#53616a; line-height:1.55; }
+.signin-help .button { justify-self:start; }
+.signin-help-alert { border-color:#f0b37a; background:#fff4e6; }
+.signin-help-alert>svg { color:#c25e00; flex:none; margin-top:2px; }
+.access-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
